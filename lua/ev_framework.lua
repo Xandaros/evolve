@@ -801,7 +801,7 @@ end )
 
 net.Receive( "EV_RankPrivilege", function( length )
 	local rank = net.ReadString()
-	local priv = evolve.privileges[ net.ReadShort(16) ]
+	local priv = evolve.privileges[ net.ReadInt(16) ]
 	local enabled = net.ReadBit() == 1
 	
 	if ( enabled ) then
