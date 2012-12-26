@@ -7,7 +7,7 @@ print( "\n=====================================================" )
 print( " Evolve 1.0 by Overv succesfully started clientside." )
 print( "=====================================================\n" )
 
-usermessage.Hook( "EV_Init", function( um )
+net.Receive( "EV_Init", function( length )
 	evolve.installed = true
 	
 	// Load plugins

@@ -14,8 +14,8 @@ evolve:LoadPlugins()
 hook.Add( "PlayerSpawn", "EvolveInit", function( ply )
 	if ( !ply.EV_SentInit ) then
 		timer.Simple( 1, function()
-			umsg.Start( "EV_Init", ply )
-			umsg.End()
+			net.Start( "EV_Init" )
+			net.Send(ply)
 		end )
 		
 		ply.EV_SentInit = true

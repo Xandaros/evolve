@@ -34,6 +34,17 @@ Net strings
 if SERVER then
 	util.AddNetworkString("EV_Notification")
 	util.AddNetworkString("EV_PluginFile")
+	util.AddNetworkString("EV_Privilege")
+	util.AddNetworkString("EV_Rank")
+	util.AddNetworkString("EV_RankPrivileges")
+	util.AddNetworkString("EV_RenameRank")
+	util.AddNetworkString("EV_RankPrivilege")
+	util.AddNetworkString("EV_RankPrivilegeAll")
+	util.AddNetworkString("EV_RemoveRank")
+	util.AddNetworkString("EV_Init")
+	util.AddNetworkString("EV_TimeSync")
+	util.AddNetworkString("EV_BanEntry")
+	util.AddNetworkString("EV_RemoveBanEntry")
 end
 
 --[[-------------------------------------------------------------------------------------------------------------------------
@@ -64,17 +75,17 @@ if ( SERVER ) then
 		
 		if ( ply != NULL and !self.SilentNotify ) then
 			net.Start( "EV_Notification" )
-				net.WriteInt( #arg, 16 )
+				net.WriteUInt( #arg, 16 )
 				for _, v in ipairs( arg ) do
 					if ( type( v ) == "string" ) then
 						net.WriteBit(false)
 						net.WriteString( v )
 					elseif ( type ( v ) == "table" ) then
 						net.WriteBit(true)
-						net.WriteInt( v.r, 16 )
-						net.WriteInt( v.g, 16 )
-						net.WriteInt( v.b, 16 )
-						net.WriteInt( v.a, 16 )
+						net.WriteUInt( v.r, 8 )
+						net.WriteUInt( v.g, 8 )
+						net.WriteUInt( v.b, 8 )
+						net.WriteUInt( v.a, 8 )
 					end
 				end
 			if ply ~= nil then
@@ -110,11 +121,11 @@ else
 	end
 	
 	net.Receive( "EV_Notification", function( length )
-		local argc = net.ReadInt(16)
+		local argc = net.ReadUInt(16)
 		local args = {}
 		for i = 1, argc do
 			if net.ReadBit() == 1 then
-				table.insert( args, Color( net.ReadInt(16), net.ReadInt(16), net.ReadInt(16), net.ReadInt(16) ) )
+				table.insert( args, Color( net.ReadUInt(8), net.ReadUInt(8), net.ReadUInt(8), net.ReadUInt(8) ) )
 			else
 				table.insert( args, net.ReadString() )
 			end
@@ -631,7 +642,9 @@ hook.Add( "PlayerSpawn", "EV_RankHook", function( ply )
 		
 		ply:SetNWInt( "EV_JoinTime", os.time() )
 		ply:SetNWInt( "EV_PlayTime", ply:GetProperty( "PlayTime" ) or 0 )
-		SendUserMessage( "EV_TimeSync", ply, os.time() )
+		net.Start("EV_TimeSync")
+			net.WriteUInt(os.time(), 32)
+		net.Send(ply)
 	end
 end )
 
@@ -639,8 +652,8 @@ end )
 	Time synchronisation
 -------------------------------------------------------------------------------------------------------------------------*/
 
-usermessage.Hook( "EV_TimeSync", function( um )
-	evolve.timeoffset = um:ReadLong() - os.time()
+net.Receive( "EV_TimeSync", function( length )
+	evolve.timeoffset = net.ReadUInt(32) - os.time()
 end )
 
 function evolve:Time()
@@ -678,10 +691,10 @@ function evolve:TransferPrivileges( ply )
 	if ( !ply:IsValid() ) then return end
 	
 	for id, privilege in ipairs( evolve.privileges ) do
-		umsg.Start( "EV_Privilege", ply )
-			umsg.Short( id )
-			umsg.String( privilege )
-		umsg.End()
+		net.Start( "EV_Privilege" )
+			net.WriteInt( id, 16 )
+			net.WriteString( privilege )
+		net.Send(ply)
 	end
 end
 
@@ -691,22 +704,22 @@ function evolve:TransferRank( ply, rank )
 	local data = evolve.ranks[ rank ]
 	local color = data.Color
 	
-	umsg.Start( "EV_Rank", ply )			
-		umsg.String( rank )
-		umsg.String( data.Title )
-		umsg.String( data.Icon )
-		umsg.String( data.UserGroup )
-		umsg.Short( data.Immunity )
+	net.Start( "EV_Rank" )			
+		net.WriteString( rank )
+		net.WriteString( data.Title )
+		net.WriteString( data.Icon )
+		net.WriteString( data.UserGroup )
+		net.WriteUInt( data.Immunity, 8 )
 		
 		if ( color ) then
-			umsg.Bool( true )
-			umsg.Short( color.r )
-			umsg.Short( color.g )
-			umsg.Short( color.b )
+			net.WriteBit( true )
+			net.WriteUInt( color.r, 8 )
+			net.WriteUInt( color.g, 8 )
+			net.WriteUInt( color.b, 8 )
 		else
-			umsg.Bool( false )
+			net.WriteBit( false )
 		end
-	umsg.End()
+	net.Send(ply)
 	
 	local privs = #( data.Privileges or {} )
 	local count
@@ -714,14 +727,14 @@ function evolve:TransferRank( ply, rank )
 	for i = 1, privs, 100 do
 		count = math.min( privs, i + 99 ) - i
 		
-		umsg.Start( "EV_RankPrivileges", ply )
-			umsg.String( rank )
-			umsg.Short( count + 1 )
+		net.Start( "EV_RankPrivileges")
+			net.WriteString( rank )
+			net.WriteInt( count + 1, 16 )
 			
 			for ii = i, i + count do
-				umsg.Short( evolve:KeyByValue( evolve.privileges, data.Privileges[ii], ipairs ) )
+				net.WriteInt( evolve:KeyByValue( evolve.privileges, data.Privileges[ii], ipairs ) or 0, 16 )
 			end
-		umsg.End()
+		net.Send(ply)
 	end
 end
 
@@ -731,21 +744,21 @@ function evolve:TransferRanks( ply )
 	end
 end
 
-usermessage.Hook( "EV_Rank", function( um )
-	local id = string.lower( um:ReadString() )
-	local title = um:ReadString()
+net.Receive( "EV_Rank", function( length )
+	local id = string.lower( net.ReadString() )
+	local title = net.ReadString()
 	local created = evolve.ranks[id] == nil
 	
 	evolve.ranks[id] = {
 		Title = title,
-		Icon = um:ReadString(),
-		UserGroup = um:ReadString(),
-		Immunity = um:ReadShort(),
+		Icon = net.ReadString(),
+		UserGroup = net.ReadString(),
+		Immunity = net.ReadUInt(8),
 		Privileges = {},
 	}
 	
-	if ( um:ReadBool() ) then
-		evolve.ranks[id].Color = Color( um:ReadShort(), um:ReadShort(), um:ReadShort() )
+	if ( net.ReadBit() == 1 ) then
+		evolve.ranks[id].Color = Color( net.ReadUInt(8), net.ReadUInt(8), net.ReadUInt(8) )
 	end
 	
 	evolve.ranks[id].IconTexture = surface.GetTextureID( "gui/silkicons/" .. evolve.ranks[id].Icon )
@@ -757,39 +770,39 @@ usermessage.Hook( "EV_Rank", function( um )
 	end
 end )
 
-usermessage.Hook( "EV_Privilege", function( um )
-	local id = um:ReadShort()
-	local name = um:ReadString()
-	
+net.Receive( "EV_Privilege", function( length )
+	local id = net.ReadInt(16)
+	local name = net.ReadString()
+
 	evolve.privileges[ id ] = name
 end )
 
-usermessage.Hook( "EV_RankPrivileges", function( um )
-	local rank = um:ReadString()
-	local privilegeCount = um:ReadShort()
+net.Receive( "EV_RankPrivileges", function( length )
+	local rank = net.ReadString()
+	local privilegeCount = net.ReadInt(16)
 	
 	for i = 1, privilegeCount do
-		table.insert( evolve.ranks[ rank ].Privileges, evolve.privileges[ um:ReadShort() ] )
+		table.insert( evolve.ranks[ rank ].Privileges, evolve.privileges[ net.ReadInt(16) ] )
 	end
 end )
 
-usermessage.Hook( "EV_RemoveRank", function( um )
-	local rank = um:ReadString()
+net.Receive( "EV_RemoveRank", function( length )
+	local rank = net.ReadString()
 	hook.Call( "EV_RankRemoved", nil, rank )
 	evolve.ranks[ rank ] = nil
 end )
 
-usermessage.Hook( "EV_RenameRank", function( um )
-	local rank = um:ReadString():lower()
-	evolve.ranks[ rank ].Title = um:ReadString()
+net.Receive( "EV_RenameRank", function( length )
+	local rank = net.ReadString():lower()
+	evolve.ranks[ rank ].Title = net.ReadString()
 	
 	hook.Call( "EV_RankRenamed", nil, rank, evolve.ranks[ rank ].Title )
 end )
 
-usermessage.Hook( "EV_RankPrivilege", function( um )
-	local rank = um:ReadString()
-	local priv = evolve.privileges[ um:ReadShort() ]
-	local enabled = um:ReadBool()
+net.Receive( "EV_RankPrivilege", function( length )
+	local rank = net.ReadString()
+	local priv = evolve.privileges[ net.ReadShort(16) ]
+	local enabled = net.ReadBit() == 1
 	
 	if ( enabled ) then
 		table.insert( evolve.ranks[ rank ].Privileges, priv )
@@ -800,10 +813,10 @@ usermessage.Hook( "EV_RankPrivilege", function( um )
 	hook.Call( "EV_RankPrivilegeChange", nil, rank, priv, enabled )
 end )
 
-usermessage.Hook( "EV_RankPrivilegeAll", function( um )
-	local rank = um:ReadString()
-	local enabled = um:ReadBool()
-	local filter = um:ReadString()
+net.Receive( "EV_RankPrivilegeAll", function( length )
+	local rank = net.ReadString()
+	local enabled = net.ReadBit() == 1
+	local filter = net.ReadString()
 	
 	if ( enabled ) then
 		for _, priv in ipairs( evolve.privileges ) do
@@ -839,10 +852,10 @@ if ( SERVER ) then
 				evolve.ranks[ args[1] ].Title = table.concat( args, " ", 2 )
 				evolve:SaveRanks()
 				
-				umsg.Start( "EV_RenameRank" )
-					umsg.String( args[1] )
-					umsg.String( evolve.ranks[ args[1] ].Title )
-				umsg.End()
+				net.Start( "EV_RenameRank" )
+					net.WriteString( args[1] )
+					net.WriteString( evolve.ranks[ args[1] ].Title )
+				net.Broadcast()
 			end
 		end
 	end )
@@ -865,11 +878,11 @@ if ( SERVER ) then
 				
 				evolve:SaveRanks()
 				
-				umsg.Start( "EV_RankPrivilege" )
-					umsg.String( rank )
-					umsg.Short( evolve:KeyByValue( evolve.privileges, privilege ) )
-					umsg.Bool( tonumber( args[3] ) == 1 )
-				umsg.End()
+				net.Start( "EV_RankPrivilege" )
+					net.WriteString( rank )
+					net.WriteInt( evolve:KeyByValue( evolve.privileges, privilege ), 16 )
+					net.WriteBit( tonumber( args[3] ) == 1 )
+				net.Broadcast()
 			elseif ( #args >= 2 and evolve.ranks[ args[1] ] and tonumber( args[2] ) and ( !args[3] or #args[3] == 1 ) ) then
 				local rank = args[1]
 				
@@ -893,11 +906,11 @@ if ( SERVER ) then
 				
 				evolve:SaveRanks()
 				
-				umsg.Start( "EV_RankPrivilegeAll" )
-					umsg.String( rank )
-					umsg.Bool( tonumber( args[2] ) == 1 )
-					umsg.String( args[3] or "" )
-				umsg.End()
+				net.Start( "EV_RankPrivilegeAll" )
+					net.WriteString( rank )
+					net.WriteBit( tonumber( args[2] ) == 1 )
+					net.WriteString( args[3] or "" )
+				net.Broadcast()
 			end
 		end
 	end )
@@ -938,9 +951,9 @@ if ( SERVER ) then
 					end
 				end
 				
-				umsg.Start( "EV_RemoveRank" )
-					umsg.String( args[1] )
-				umsg.End()
+				net.Start( "EV_RemoveRank" )
+					net.WriteString( args[1] )
+				net.Broadcast()
 			end
 		end
 	end )
@@ -987,7 +1000,21 @@ if ( SERVER ) then
 			if ( info.BanEnd and ( info.BanEnd > os.time() or info.BanEnd == 0 ) ) then
 				local time = info.BanEnd - os.time()
 				if ( info.BanEnd == 0 ) then time = 0 end
-				SendUserMessage( "EV_BanEntry", ply, tostring( uniqueid ), info.Nick, info.SteamID, info.BanReason, evolve:GetProperty( info.BanAdmin, "Nick" ), time )
+				net.Start("EV_BanEntry")
+					
+					net.WriteString(tostring(uniqueid))
+					net.WriteString(info.Nick)
+					net.WriteString(info.SteamID)
+					net.WriteString(info.BanReason)
+					net.WriteString(evolve:GetProperty(info.BanAdmin, "Nick"))
+					net.WriteUInt(time, 64)
+					
+				if ply == nil then
+					net.Broadcast()
+				else
+					net.Send(ply)
+				end
+				--SendUserMessage( "EV_BanEntry", ply, tostring( uniqueid ), info.Nick, info.SteamID, info.BanReason, evolve:GetProperty( info.BanAdmin, "Nick" ), time )
 			end
 		end
 	end
@@ -1002,7 +1029,15 @@ if ( SERVER ) then
 		
 		local a = "Console"
 		if ( adminuid != 0 ) then a = player.GetByUniqueID( adminuid ):Nick() end
-		SendUserMessage( "EV_BanEntry", nil, uid, evolve:GetProperty( uid, "Nick" ), evolve:GetProperty( uid, "SteamID" ), reason, a, length )
+		net.Start("EV_BanEntry")
+			net.WriteString(tostring(uid))
+			net.WriteString(evolve:GetProperty(uid, "Nick"))
+			net.WriteString(evolve:GetProperty(uid, "SteamID"))
+			net.WriteString(reason)
+			net.WriteString(a)
+			net.WriteUInt(length, 64)
+		net.Broadcast()
+		--SendUserMessage( "EV_BanEntry", nil, uid, evolve:GetProperty( uid, "Nick" ), evolve:GetProperty( uid, "SteamID" ), reason, a, length )
 		
 		-- Let SourceBans do the kicking or Evolve
 		if ( sourcebans ) then
@@ -1034,7 +1069,10 @@ if ( SERVER ) then
 		evolve:SetProperty( uid, "BanAdmin", nil )
 		evolve:CommitProperties()
 		
-		SendUserMessage( "EV_RemoveBanEntry", nil, tostring( uid ) )
+		net.Start("EV_RemoveBanEntry")
+			net.WriteString(tostring(uid))
+		net.Broadcast()
+		--SendUserMessage( "EV_RemoveBanEntry", nil, tostring( uid ) )
 		
 		if ( sourcebans ) then
 			local admin
@@ -1058,18 +1096,18 @@ if ( SERVER ) then
 		return banEnd and ( banEnd > os.time() or banEnd == 0 )
 	end
 else
-	usermessage.Hook( "EV_BanEntry", function( um )
+	net.Receive( "EV_BanEntry", function( length )
 		if ( !evolve.bans ) then evolve.bans = {} end
 		
-		local id = um:ReadString()
+		local id = net.ReadString()
 		evolve.bans[id] =  {
-			Nick = um:ReadString(),
-			SteamID = um:ReadString(),
-			Reason = um:ReadString(),
-			Admin = um:ReadString()
+			Nick = net.ReadString(),
+			SteamID = net.ReadString(),
+			Reason = net.ReadString(),
+			Admin = net.ReadString()
 		}
 		
-		local time = um:ReadLong()
+		local time = net.ReadLong(64)
 		if ( time > 0 ) then
 			evolve.bans[id].End = time + os.time()
 		else
@@ -1079,10 +1117,10 @@ else
 		hook.Call( "EV_BanAdded", nil, id )		
 	end )
 	
-	usermessage.Hook( "EV_RemoveBanEntry", function( um )
+	net.Receive( "EV_RemoveBanEntry", function( length )
 		if ( !evolve.bans ) then return end
 		
-		local id = um:ReadString()
+		local id = net.ReadString()
 		hook.Call( "EV_BanRemoved", nil, id )
 		evolve.bans[id] = nil
 	end )
