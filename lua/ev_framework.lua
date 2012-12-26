@@ -243,54 +243,6 @@ hook.Call = function( name, gm, ... )
 	return evolve.HookCall( name, gm, ... )
 end
 
-if ( SERVER ) then
-	concommand.Add( "ev_reloadplugin", function( ply, com, args )
-		if ( !ply:IsValid() and args[1] ) then
-			local found
-			
-			for k, plugin in ipairs( evolve.plugins ) do
-				if ( string.lower( plugin.Title ) == string.lower( args[1] ) ) then
-					found = k
-					break
-				end
-			end
-			
-			if ( found ) then
-				print( "[EV] Reloading plugin " .. evolve.plugins[found].Title .. "..." )
-				
-				local plugin = evolve.plugins[found].File
-				local title = evolve.plugins[found].Title
-				local prefix = string.Left( plugin, string.find( plugin, "_" ) - 1 )
-				
-				if ( prefix != "cl" ) then table.remove( evolve.plugins, found ) pluginFile = plugin include( "ev_plugins/" .. plugin ) end
-				
-				if ( prefix == "sh" or prefix == "cl" ) then
-					net.Start("EV_PluginFile")
-						net.WriteString(title)
-						net.WriteString(file.Read( "ev_plugins/" .. plugin, "LUA" ))
-					net.Broadcast()
-				end
-			else
-				print( "[EV] Plugin '" .. tostring( args[1] ) .. "' not found!" )
-			end
-		end
-	end )
-else
-	net.Receive( "EV_PluginFile", function( length )
-		local title = net.ReadString()
-		local contents = net.ReadString()
-		
-		for k, plugin in ipairs( evolve.plugins ) do
-			if ( string.lower( plugin.Title ) == string.lower( title ) ) then
-				found = k
-				table.remove( evolve.plugins, k )
-			end
-		end
-		
-		RunString( contents )
-	end )
-end
-
 /*-------------------------------------------------------------------------------------------------------------------------
 	Player collections
 -------------------------------------------------------------------------------------------------------------------------*/
