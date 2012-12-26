@@ -7,7 +7,6 @@ evolve = {}
 
 // Requirements
 require( "glon" )
-require( "datastream" )
 
 // Load clientside files
 include( "ev_framework.lua" )

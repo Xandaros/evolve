@@ -93,6 +93,8 @@ function TAB:Initialize( pnl )
 			cvSlider:SetDecimals( 0 )
 			cvSlider:SetValue( GetConVar( cv[1] ):GetInt() )
 			cvSlider.ConVar = cv[1]
+			
+			cvSlider.Label:SetDark(true)
 			self.LimitsContainer:AddItem( cvSlider )
 		
 			table.insert( self.ConVarSliders, cvSlider )
@@ -118,6 +120,7 @@ function TAB:Initialize( pnl )
 			cvCheckbox.DoClick = function( self )
 				TAB:ApplySettings()
 			end
+			cvCheckbox.Label:SetDark(true)
 			self.Settings:AddItem( cvCheckbox )
 			
 			table.insert( self.ConVarCheckboxes, cvCheckbox )

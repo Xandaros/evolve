@@ -22,7 +22,7 @@ function TAB:Initialize( pnl )
 	
 	self.ButUnban = vgui.Create( "EvolveButton", pnl )
 	self.ButUnban:SetSize( 80, 22 )
-	self.ButUnban:SetPos( self.Width - 80, pnl:GetParent():GetTall() - 53 )
+	self.ButUnban:SetPos( self.Width - 80, pnl:GetParent():GetTall() - 58 )
 	self.ButUnban:SetButtonText( "Unban" )
 	self.ButUnban:SetNotHighlightedColor( 50 )
 	self.ButUnban:SetHighlightedColor( 90 )
@@ -35,7 +35,7 @@ function TAB:Initialize( pnl )
 	
 	self.ButTime = vgui.Create( "EvolveButton", pnl )
 	self.ButTime:SetSize( 60, 22 )
-	self.ButTime:SetPos( self.Width - 145, pnl:GetParent():GetTall() - 53 )
+	self.ButTime:SetPos( self.Width - 145, pnl:GetParent():GetTall() - 58 )
 	self.ButTime:SetButtonText( "Time..." )
 	self.ButTime.DoClick = function()
 		if ( #self.BanList:GetLines() > 0 ) then

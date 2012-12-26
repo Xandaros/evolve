@@ -28,9 +28,17 @@ evolve.plugins = {}
 evolve.version = 179
 _R = debug.getregistry()
 
-/*-------------------------------------------------------------------------------------------------------------------------
+--[[-------------------------------------------------------------------------------------------------------------------------
+Net strings
+---------------------------------------------------------------------------------------------------------------------------]]
+if SERVER then
+	util.AddNetworkString("EV_Notification")
+	util.AddNetworkString("EV_PluginFile")
+end
+
+--[[-------------------------------------------------------------------------------------------------------------------------
 	Messages and notifications
--------------------------------------------------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------------------------------------------------------]]
 
 function evolve:Message( msg )
 	print( "[EV] " .. msg )
@@ -55,19 +63,25 @@ if ( SERVER ) then
 		end
 		
 		if ( ply != NULL and !self.SilentNotify ) then
-			umsg.Start( "EV_Notification", ply )
-				umsg.Short( #arg )
+			net.Start( "EV_Notification" )
+				net.WriteInt( #arg, 16 )
 				for _, v in ipairs( arg ) do
 					if ( type( v ) == "string" ) then
-						umsg.String( v )
+						net.WriteBit(false)
+						net.WriteString( v )
 					elseif ( type ( v ) == "table" ) then
-						umsg.Short( v.r )
-						umsg.Short( v.g )
-						umsg.Short( v.b )
-						umsg.Short( v.a )
+						net.WriteBit(true)
+						net.WriteInt( v.r, 16 )
+						net.WriteInt( v.g, 16 )
+						net.WriteInt( v.b, 16 )
+						net.WriteInt( v.a, 16 )
 					end
 				end
-			umsg.End()
+			if ply ~= nil then
+				net.Send(ply)
+			else
+				net.Broadcast()
+			end
 		end
 		
 		local str = ""
@@ -95,12 +109,15 @@ else
 		chat.AddText( unpack( args ) )
 	end
 	
-	usermessage.Hook( "EV_Notification", function( um )
-		local argc = um:ReadShort()
+	net.Receive( "EV_Notification", function( length )
+		local argc = net.ReadInt(16)
 		local args = {}
-		for i = 1, argc / 2, 1 do
-			table.insert( args, Color( um:ReadShort(), um:ReadShort(), um:ReadShort(), um:ReadShort() ) )
-			table.insert( args, um:ReadString() )
+		for i = 1, argc do
+			if net.ReadBit() == 1 then
+				table.insert( args, Color( net.ReadInt(16), net.ReadInt(16), net.ReadInt(16), net.ReadInt(16) ) )
+			else
+				table.insert( args, net.ReadString() )
+			end
 		end
 		
 		chat.AddText( unpack( args ) )
@@ -238,7 +255,10 @@ if ( SERVER ) then
 				if ( prefix != "cl" ) then table.remove( evolve.plugins, found ) pluginFile = plugin include( "ev_plugins/" .. plugin ) end
 				
 				if ( prefix == "sh" or prefix == "cl" ) then
-					datastream.StreamToClients( player.GetAll(), "EV_PluginFile", { Title = title, Contents = file.Read( "ev_plugins/" .. plugin, "LUA" ) } )
+					net.Start("EV_PluginFile")
+						net.WriteString(title)
+						net.WriteString(file.Read( "ev_plugins/" .. plugin, "LUA" ))
+					net.Broadcast()
 				end
 			else
 				print( "[EV] Plugin '" .. tostring( args[1] ) .. "' not found!" )
@@ -246,15 +266,18 @@ if ( SERVER ) then
 		end
 	end )
 else
-	datastream.Hook( "EV_PluginFile", function( handler, id, encoded, decoded )
+	net.Receive( "EV_PluginFile", function( length )
+		local title = net.ReadString()
+		local contents = net.ReadString()
+		
 		for k, plugin in ipairs( evolve.plugins ) do
-			if ( string.lower( plugin.Title ) == string.lower( decoded.Title ) ) then
+			if ( string.lower( plugin.Title ) == string.lower( title ) ) then
 				found = k
 				table.remove( evolve.plugins, k )
 			end
 		end
 		
-		RunString( decoded.Contents )
+		RunString( contents )
 	end )
 end
 
