@@ -16,7 +16,7 @@ function PLUGIN:Call( ply, args )
 		
 		if ( sound ) then
 			if ( string.match( sound, "^[a-zA-Z0-9/]+.wav$" ) ) then
-				if ( !file.Exists( "../sound/" .. sound ) ) then
+				if ( !file.Exists( "sound/" .. sound, "GAME" ) ) then
 					evolve:Notify( ply, evolve.colors.red, "Sound \"" .. sound .. "\" not found!" )
 					return
 				end

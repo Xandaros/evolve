@@ -15,7 +15,7 @@ function PLUGIN:Call( ply, args )
 		local players = evolve:FindPlayer( args, ply )
 		
 		for k, v in pairs( players ) do
-				if ( ValidEntity( v:GetVehicle() ) ) then v:ExitVehicle() else table.remove( players, k ) end
+				if ( IsValid( v:GetVehicle() ) ) then v:ExitVehicle() else table.remove( players, k ) end
 			end
 		
 		if ( #players > 0 ) then			

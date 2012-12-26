@@ -26,6 +26,7 @@ evolve.category.punishment = 3
 evolve.category.teleportation = 4
 evolve.plugins = {}
 evolve.version = 179
+_R = debug.getregistry()
 
 /*-------------------------------------------------------------------------------------------------------------------------
 	Messages and notifications
@@ -148,7 +149,7 @@ local pluginFile
 function evolve:LoadPlugins()	
 	evolve.plugins = {}
 	
-	local plugins = file.FindInLua( "ev_plugins/*.lua" )
+	local plugins,_ = file.Find( "ev_plugins/*.lua", "LUA" )
 	for _, plugin in ipairs( plugins ) do
 		local prefix = string.Left( plugin, string.find( plugin, "_" ) - 1 )
 		pluginFile = plugin
@@ -237,7 +238,7 @@ if ( SERVER ) then
 				if ( prefix != "cl" ) then table.remove( evolve.plugins, found ) pluginFile = plugin include( "ev_plugins/" .. plugin ) end
 				
 				if ( prefix == "sh" or prefix == "cl" ) then
-					datastream.StreamToClients( player.GetAll(), "EV_PluginFile", { Title = title, Contents = file.Read( "../lua/ev_plugins/" .. plugin ) } )
+					datastream.StreamToClients( player.GetAll(), "EV_PluginFile", { Title = title, Contents = file.Read( "ev_plugins/" .. plugin, "LUA" ) } )
 				end
 			else
 				print( "[EV] Plugin '" .. tostring( args[1] ) .. "' not found!" )
@@ -362,9 +363,9 @@ function _R.Entity:UniqueID() if ( !self:IsValid() ) then return 0 end end
 -------------------------------------------------------------------------------------------------------------------------*/
 
 function evolve:LoadPlayerInfo()
-	if ( file.Exists( "ev_playerinfo.txt" ) ) then
+	if ( file.Exists( "ev_playerinfo.txt", "DATA" ) ) then
 		debug.sethook()
-		self.PlayerInfo = glon.decode( file.Read( "ev_playerinfo.txt" ) )
+		self.PlayerInfo = glon.decode( file.Read( "ev_playerinfo.txt", "DATA" ) )
 	else
 		self.PlayerInfo = {}
 	end
@@ -477,7 +478,7 @@ end
 -------------------------------------------------------------------------------------------------------------------------*/
 
 // COMPATIBILITY
-evolve.compatibilityRanks = glon.decode( file.Read( "ev_ranks.txt" ) )
+evolve.compatibilityRanks = glon.decode( file.Read( "ev_ranks.txt", "DATA" ) )
 // COMPATIBILITY
 
 function _R.Player:EV_HasPrivilege( priv )
@@ -636,8 +637,8 @@ function evolve:SaveRanks()
 end
 
 function evolve:LoadRanks()
-	if ( file.Exists( "ev_userranks.txt" ) ) then
-		evolve.ranks = glon.decode( file.Read( "ev_userranks.txt" ) )
+	if ( file.Exists( "ev_userranks.txt", "DATA" ) ) then
+		evolve.ranks = glon.decode( file.Read( "ev_userranks.txt", "DATA" ) )
 	else
 		include( "ev_defaultranks.lua" )
 		evolve:SaveRanks()
@@ -1073,8 +1074,8 @@ function evolve:SaveGlobalVars()
 end
 
 function evolve:LoadGlobalVars()
-	if ( file.Exists( "ev_globalvars.txt" ) ) then
-		evolve.globalvars = glon.decode( file.Read( "ev_globalvars.txt" ) )
+	if ( file.Exists( "ev_globalvars.txt", "DATA" ) ) then
+		evolve.globalvars = glon.decode( file.Read( "ev_globalvars.txt", "DATA" ) )
 	else
 		evolve.globalvars = {}
 		evolve:SaveGlobalVars()
@@ -1099,16 +1100,16 @@ function evolve:Log( str )
 	if ( CLIENT ) then return end
 	
 	local logFile = "ev_logs/" .. os.date( "%d-%m-%Y" ) .. ".txt"
-	local files = file.Find( "ev_logs/" .. os.date( "%d-%m-%Y" ) .. "*.txt" )
+	local files = file.Find( "ev_logs/" .. os.date( "%d-%m-%Y" ) .. "*.txt", "DATA" )
 	table.sort( files )
 	if ( #files > 0 ) then logFile = "ev_logs/" .. files[math.max(#files-1,1)] end
 	
-	local src = file.Read( logFile ) or ""
+	local src = file.Read( logFile, "DATA" ) or ""
 	if ( #src > 200 * 1024 ) then
 		logFile = "ev_logs/" .. os.date( "%d-%m-%Y" ) .. " (" .. #files + 1 .. ").txt"
 	end
 	
-	filex.Append( logFile, "[" .. os.date() .. "] " .. str .. "\n" )
+	file.Append( logFile, "[" .. os.date() .. "] " .. str .. "\n" )
 end
 
 function evolve:PlayerLogStr( ply )

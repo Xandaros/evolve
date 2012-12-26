@@ -15,11 +15,11 @@ function PLUGIN:Call( ply, args )
 		local players = evolve:FindPlayer( args, ply )
 		local vehicle = ply:GetEyeTrace().Entity
 		
-		if ( !ValidEntity( vehicle ) or !vehicle:IsVehicle() ) then
+		if ( !IsValid( vehicle ) or !vehicle:IsVehicle() ) then
 			evolve:Notify( ply, evolve.colors.red, "You are not looking at a vehicle!" )
 		else
 			if ( #players == 1 ) then
-				if ( ValidEntity( vehicle:GetDriver() ) ) then vehicle:GetDriver():ExitVehicle() end
+				if ( IsValid( vehicle:GetDriver() ) ) then vehicle:GetDriver():ExitVehicle() end
 				players[1]:EnterVehicle( vehicle )
 				
 				evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has forced ", evolve.colors.red, players[1]:Nick(), evolve.colors.white, " into a vehicle." )

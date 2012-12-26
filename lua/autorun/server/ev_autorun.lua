@@ -7,7 +7,6 @@ evolve = {}
 
 // Requirements
 if ( !glon ) then require( "glon" ) end
-if ( !datastream ) then require( "datastream" ) end
 //if ( !gatekeeper ) then require( "gatekeeper" ) end
 
 // Distribute clientside and shared files

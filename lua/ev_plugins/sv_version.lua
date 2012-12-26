@@ -14,8 +14,8 @@ end
 
 function PLUGIN:PlayerInitialSpawn( ply )
 	if ( ply:EV_IsOwner() ) then
-		if ( !self.LatestVersion ) then
-			http.Get( "http://code.google.com/p/evolvemod/source/list", "", function( src )
+		--[[if ( !self.LatestVersion ) then
+			http.Fetch( "http://code.google.com/p/evolvemod/source/list", "", function( src )
 				self.LatestVersion = tonumber( src:match( "r([1-9]+)" ) )
 				self:PlayerInitialSpawn( ply )
 			end )
@@ -24,7 +24,8 @@ function PLUGIN:PlayerInitialSpawn( ply )
 		
 		if ( evolve.version < self.LatestVersion ) then
 			evolve:Notify( ply, evolve.colors.red, "WARNING: Your Evolve SVN needs to be updated to revision " .. self.LatestVersion .. "!" )
-		end
+		end]]
+		--TODO: Update to GIT
 	end
 end
 

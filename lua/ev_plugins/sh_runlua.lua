@@ -33,7 +33,7 @@ setmetatable( EVERYONE, mt )
 setmetatable( EVERYTHING, mt2 )
 
 function PLUGIN:Call( ply, args )	
-	if ( ply:EV_HasPrivilege( "Lua" ) and ValidEntity( ply ) ) then
+	if ( ply:EV_HasPrivilege( "Lua" ) and IsValid( ply ) ) then
 		local code = table.concat( args, " " )
 		
 		if ( #code > 0 ) then

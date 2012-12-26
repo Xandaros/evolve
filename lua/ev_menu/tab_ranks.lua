@@ -229,7 +229,8 @@ function TAB:PrintNameByClass( class )
 			end
 		end
 		
-		for _, val in ipairs( file.FindInLua( "../" .. GAMEMODE.Folder .. "/entities/weapons/gmod_tool/stools/*.lua" )  ) do
+		local stools,_ = file.Find(GAMEMODE.Folder .. "/entities/weapons/gmod_tool/stools/*.lua", "GAME")
+		for _, val in ipairs( stools  ) do
 			local _, __, c = string.find( val, "([%w_]*)\.lua" )
 			
 			if ( c == class ) then

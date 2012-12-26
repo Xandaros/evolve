@@ -64,7 +64,7 @@ function PANEL:AddPlayer( ply )
 	item.Avatar:SetSize( 17, 17 )
 	
 	item.PaintOver = function()
-		if ( !ValidEntity( item.Player ) ) then
+		if ( !IsValid( item.Player ) ) then
 			for i, it in pairs( self.SelectedItems ) do
 				if ( it == item ) then table.remove( self.SelectedItems, i ) break end
 			end
@@ -107,7 +107,7 @@ end
 
 function PANEL:GetSelectedPlayers()
 	local plys = {}
-	for _, item in pairs( self:GetSelectedItems() ) do if ( ValidEntity( item.Player ) ) then table.insert( plys, item.Player:Nick() ) end end
+	for _, item in pairs( self:GetSelectedItems() ) do if ( IsValid( item.Player ) ) then table.insert( plys, item.Player:Nick() ) end end
 	return plys
 end
 

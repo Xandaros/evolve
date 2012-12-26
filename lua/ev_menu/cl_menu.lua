@@ -50,7 +50,8 @@ function MENU:Initialize()
 	self.TabContainer:SetPos( 0, 0 )
 	self.TabContainer:SetSize( self.Panel:GetSize() )
 	
-	for _, file in ipairs( file.FindInLua( "ev_menu/tab_*.lua" ) ) do
+	local tabs,_ = file.Find("ev_menu/tab_*.lua", "LUA")
+	for _, file in ipairs( tabs ) do
 		include( "ev_menu/" .. file )
 	end
 	

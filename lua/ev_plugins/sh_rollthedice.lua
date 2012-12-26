@@ -10,7 +10,7 @@ PLUGIN.ChatCommand = "rtd"
 PLUGIN.Privileges = { "Roll the Dice" }
 
 function PLUGIN:Call( ply, args )
-	if ( ply:EV_HasPrivilege( "Roll the Dice" ) and ValidEntity( ply ) ) then			
+	if ( ply:EV_HasPrivilege( "Roll the Dice" ) and IsValid( ply ) ) then			
 		if ( ( ply.EV_NextDiceRoll or 0 ) < CurTime() ) then
 			evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has rolled the dice and ", evolve.colors.red, self:RollTheDice( ply ), evolve.colors.white, "!" )
 			ply.EV_NextDiceRoll = CurTime() + 60

@@ -3,7 +3,8 @@
 -------------------------------------------------------------------------------------------------------------------------*/
 
 // Send all tabs to the clients
-for _, tab in ipairs( file.FindInLua( "ev_menu/tab_*.lua" ) ) do
+local tabs,_ = file.Find( "ev_menu/tab_*.lua", "LUA" )
+for _, tab in ipairs( tabs ) do
 	AddCSLuaFile( tab )
 end
 
@@ -14,6 +15,6 @@ function evolve:RegisterTab( tab )
 	table.Add( evolve.privileges, tab.Privileges or {} )
 end
 
-for _, tab in ipairs( file.FindInLua( "ev_menu/tab_*.lua" ) ) do
+for _, tab in ipairs( tabs ) do
 	include( tab )
 end

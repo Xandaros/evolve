@@ -1,6 +1,6 @@
-/*-------------------------------------------------------------------------------------------------------------------------
+--[[-------------------------------------------------------------------------------------------------------------------------
 	Restriction
--------------------------------------------------------------------------------------------------------------------------*/
+-------------------------------------------------------------------------------------------------------------------------]]
 
 local PLUGIN = {}
 PLUGIN.Title = "Restriction"
@@ -83,7 +83,8 @@ function PLUGIN:Initialize()
 	local tools = {}
 	
 	if ( GAMEMODE.IsSandboxDerived ) then
-		for _, val in ipairs( file.FindInLua( "weapons/gmod_tool/stools/*.lua" )  ) do
+		local stools,_ = file.Find( "weapons/gmod_tool/stools/*.lua", "LUA" )
+		for _, val in ipairs( stools ) do
 			local _, __, class = string.find( val, "([%w_]*)\.lua" )
 			table.insert( tools, "#" .. class )
 		end
