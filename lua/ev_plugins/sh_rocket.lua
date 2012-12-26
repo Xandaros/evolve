@@ -32,7 +32,9 @@ function PLUGIN:Call( ply, args )
 			pl:SetVelocity( Vector( 0, 0, 4000 ) )
 			ParticleEffectAttach( "rockettrail", PATTACH_ABSORIGIN_FOLLOW, pl, 0 )
 			
-			timer.Simple( 1, PLUGIN.Explode, PLUGIN, pl )
+			timer.Simple( 1, function()
+				PLUGIN.Explode(PLUGIN, pl)
+			end)
 		end
 		
 		if ( #players > 0 ) then

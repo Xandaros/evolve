@@ -8,23 +8,38 @@ PLUGIN.Description = "Display all available chat commands."
 PLUGIN.Author = "Overv"
 PLUGIN.ChatCommand = "commands"
 
+function PLUGIN:Initialize()
+	util.AddNetworkString( "EV_Command" )
+end
+
 function PLUGIN:Call( ply, args )
 	local commands = table.Copy( evolve.plugins )
-	table.SortByMember( commands, "ChatCommand", function( a, b ) return a > b end )
+	--table.SortByMember( commands, "ChatCommand", function( a, b ) return a > b end )
 	
 	if ( ply:IsValid() ) then
-		umsg.Start( "EV_CommandStart", ply ) umsg.End()
+		net.Start( "EV_Command" )
+			net.WriteBit( false )
+			net.WriteString( "\n============ Available chat commands for Evolve ============\n" )
+		net.Send( ply )
 		
 		for _, plug in ipairs( commands ) do
 			if ( plug.ChatCommand ) then
-				umsg.Start( "EV_Command", ply )
-					umsg.String( plug.ChatCommand )
-					umsg.String( tostring( plug.Usage ) )
-					umsg.String( plug.Description )
-				umsg.End()
+				if type(plug.ChatCommand) == "string" then plug.ChatCommand = { plug.ChatCommand } end
+				for __, ChatCommand in ipairs( plug.ChatCommand ) do
+					net.Start( "EV_Command" )
+						net.WriteBit( true )
+						net.WriteString( ChatCommand )
+						net.WriteString( tostring( plug.Usage ) )
+						net.WriteString( plug.Description )
+					net.Send( ply )
+				end
+
 			end
 		end
-		umsg.Start( "EV_CommandEnd", ply ) umsg.End()
+		net.Start( "EV_Command" )
+			net.WriteBit( false )
+			net.WriteString( "" )
+		net.Send( ply )
 		
 		evolve:Notify( ply, evolve.colors.white, "All chat commands have been printed to your console." )
 	else
@@ -40,24 +55,20 @@ function PLUGIN:Call( ply, args )
 	end
 end
 
-usermessage.Hook( "EV_CommandStart", function( um )
-	print( "\n============ Available chat commands for Evolve ============\n" )
-end )
-
-usermessage.Hook( "EV_CommandEnd", function( um )
-	print( "" )
-end )
-
-usermessage.Hook( "EV_Command", function( um )
-	local com = um:ReadString()
-	local usage = um:ReadString()
-	local desc = um:ReadString()
-	
-	if ( usage != "nil" ) then
-		print( "!" .. com .. " " .. usage .. " - " .. desc )
+net.Receive( "EV_Command", function( len )
+	if net.ReadBit() == 1 then
+		local com   = net.ReadString()
+		local usage = net.ReadString()
+		local desc  = net.ReadString()
+		
+		if usage != "nil" then
+			print( "!" .. com .. " " .. usage .. " - " .. desc )
+		else
+			print( "!" .. com .. " - " .. desc )
+		end
 	else
-		print( "!" .. com .. " - " .. desc )
+		print( net.ReadString() )
 	end
-end )
+end)
 
 evolve:RegisterPlugin( PLUGIN )
