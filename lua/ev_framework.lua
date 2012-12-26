@@ -1007,7 +1007,7 @@ if ( SERVER ) then
 					net.WriteString(info.SteamID)
 					net.WriteString(info.BanReason)
 					net.WriteString(evolve:GetProperty(info.BanAdmin, "Nick"))
-					net.WriteUInt(time, 64)
+					net.WriteUInt(time, 32)
 					
 				if ply == nil then
 					net.Broadcast()
@@ -1020,9 +1020,11 @@ if ( SERVER ) then
 	end
 	
 	function evolve:Ban( uid, length, reason, adminuid )		
-		if ( length == 0 ) then length = -os.time() end
-		
-		evolve:SetProperty( uid, "BanEnd", os.time() + length )
+		if ( length == 0 ) then
+			evolve:SetProperty( uid, "BanEnd", 0 )
+		else
+			evolve:SetProperty( uid, "BanEnd", os.time() + length )
+		end
 		evolve:SetProperty( uid, "BanReason", reason )
 		evolve:SetProperty( uid, "BanAdmin", adminuid )
 		evolve:CommitProperties()
@@ -1035,7 +1037,7 @@ if ( SERVER ) then
 			net.WriteString(evolve:GetProperty(uid, "SteamID"))
 			net.WriteString(reason)
 			net.WriteString(a)
-			net.WriteUInt(length, 64)
+			net.WriteUInt(length, 32)
 		net.Broadcast()
 		--SendUserMessage( "EV_BanEntry", nil, uid, evolve:GetProperty( uid, "Nick" ), evolve:GetProperty( uid, "SteamID" ), reason, a, length )
 		
@@ -1107,7 +1109,7 @@ else
 			Admin = net.ReadString()
 		}
 		
-		local time = net.ReadLong(64)
+		local time = net.ReadInt(32)
 		if ( time > 0 ) then
 			evolve.bans[id].End = time + os.time()
 		else
