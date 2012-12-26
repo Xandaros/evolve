@@ -172,15 +172,13 @@ end
 	Plugin management
 -------------------------------------------------------------------------------------------------------------------------*/
 
-local pluginFile
-
 function evolve:LoadPlugins()	
 	evolve.plugins = {}
 	
 	local plugins,_ = file.Find( "ev_plugins/*.lua", "LUA" )
 	for _, plugin in ipairs( plugins ) do
 		local prefix = string.Left( plugin, string.find( plugin, "_" ) - 1 )
-		pluginFile = plugin
+		evolve.pluginFile = plugin
 		
 		if ( CLIENT and ( prefix == "sh" or prefix == "cl" ) ) then
 			include( "ev_plugins/" .. plugin )
@@ -192,6 +190,7 @@ function evolve:LoadPlugins()
 end
 
 function evolve:RegisterPlugin( plugin )
+	local pluginFile = evolve.pluginFile
 	if ( string.Left( pluginFile, string.find( pluginFile, "_" ) - 1 ) != "cl" or CLIENT ) then
 		table.insert( evolve.plugins, plugin )
 		plugin.File = pluginFile
