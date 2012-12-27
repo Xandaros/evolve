@@ -9,15 +9,6 @@ PLUGIN.Author = "Overv"
 PLUGIN.Privileges = { "Player names" }
 
 if ( SERVER ) then
-	resource.AddFile( "materials/gui/silkicons/comments.vtf" )
-	resource.AddFile( "materials/gui/silkicons/comments.vmt" )
-	resource.AddFile( "materials/gui/silkicons/user_add.vtf" )
-	resource.AddFile( "materials/gui/silkicons/user_add.vmt" )
-	resource.AddFile( "materials/gui/silkicons/shield_add.vtf" )
-	resource.AddFile( "materials/gui/silkicons/shield_add.vmt" )
-	resource.AddFile( "materials/gui/silkicons/key.vtf" )
-	resource.AddFile( "materials/gui/silkicons/key.vmt" )
-	
 	concommand.Add( "EV_SetChatState", function( ply, cmd, args )
 		if ( tonumber( args[1] ) ) then
 			ply:SetNWBool( "EV_Chatting", tonumber( args[1] ) > 0 )
