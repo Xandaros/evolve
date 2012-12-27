@@ -630,6 +630,13 @@ function evolve:LoadRanks()
 		include( "ev_defaultranks.lua" )
 		evolve:SaveRanks()
 	end
+	
+	-- Add resources
+	for _,rank in pairs(evolve.ranks) do
+		if rank.Icon and rank.Icon ~= "" then
+			resource.AddFile("icon16/" .. rank.Icon .. ".png")
+		end
+	end
 end
 
 if ( SERVER ) then evolve:LoadRanks() end
@@ -712,7 +719,7 @@ net.Receive( "EV_Rank", function( length )
 		evolve.ranks[id].Color = Color( net.ReadUInt(8), net.ReadUInt(8), net.ReadUInt(8) )
 	end
 	
-	evolve.ranks[id].IconTexture = surface.GetTextureID( "gui/silkicons/" .. evolve.ranks[id].Icon )
+	evolve.ranks[id].IconTexture = Material( "icon16/" .. evolve.ranks[id].Icon .. ".png" )
 	
 	if ( created ) then
 		hook.Call( "EV_RankCreated", nil, id )

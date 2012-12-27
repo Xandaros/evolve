@@ -17,12 +17,14 @@ function PLUGIN:Call( ply, args )
 			return
 		end
 	end
+	
+	local arg = table.concat(args, " ")
 
-	if ( args[1] ) then
+	if ( arg ) then
 		local found
 		
 		for k, plugin in ipairs( evolve.plugins ) do
-			if ( string.lower( plugin.Title ) == string.lower( args[1] ) ) then
+			if ( string.lower( plugin.Title ) == string.lower( arg ) ) then
 				found = k
 				break
 			end
@@ -49,9 +51,9 @@ function PLUGIN:Call( ply, args )
 			end
 		else
 			if ply:IsValid() then
-				evolve:Notify(ply, evolve.colors.red, "Plugin '" .. tostring(args[1]) .. "' not found!")
+				evolve:Notify(ply, evolve.colors.red, "Plugin '" .. tostring(arg) .. "' not found!")
 			else
-				print( "[EV] Plugin '" .. tostring( args[1] ) .. "' not found!" )
+				print( "[EV] Plugin '" .. tostring( arg ) .. "' not found!" )
 			end
 		end
 	end

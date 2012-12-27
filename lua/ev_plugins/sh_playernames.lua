@@ -44,13 +44,12 @@ if ( SERVER ) then
 		end
 	end
 else
-	PLUGIN.iconUser = surface.GetTextureID( "gui/silkicons/user" )
-	PLUGIN.iconChat = surface.GetTextureID( "gui/silkicons/comments" )
-	PLUGIN.iconDeveloper = surface.GetTextureID( "gui/silkicons/emoticon_smile" )
-	PLUGIN.iconAFK = surface.GetTextureID( "gui/silkicons/arrow_refresh" )
+	PLUGIN.iconUser = Material( "icon16/user.png" )
+	PLUGIN.iconChat = Material( "icon16/comments.png" )
+	PLUGIN.iconAFK = Material( "icon16/arrow_refresh.png" )
 
 	function PLUGIN:HUDPaint()
-		if ( !evolve.installed or !LocalPlayer():EV_HasPrivilege( "Player names" ) or ( GAMEMODE.IsSandboxDerived ) ) then return end
+		if ( !evolve.installed or !LocalPlayer():EV_HasPrivilege( "Player names" ) or ( !GAMEMODE.IsSandboxDerived ) ) then return end
 		
 		for _, pl in ipairs( player.GetAll() ) do
 			if ( pl != LocalPlayer() and pl:Health() > 0 ) then
@@ -89,15 +88,13 @@ else
 						surface.DrawOutlinedRect( drawPos.x, drawPos.y, w, h )
 						
 						if ( pl:GetNWBool( "EV_Chatting", false ) ) then
-							surface.SetTexture( self.iconChat )
+							surface.SetMaterial( self.iconChat )
 						elseif ( pl:GetNWBool( "EV_AFK", false ) ) then
-							surface.SetTexture( self.iconAFK )
-						elseif ( pl:SteamID() == "STEAM_0:1:11956651" ) then
-								surface.SetTexture( self.iconDeveloper )
+							surface.SetMaterial( self.iconAFK )
 						elseif ( evolve.ranks[ pl:EV_GetRank() ] ) then
-							surface.SetTexture( evolve.ranks[ pl:EV_GetRank() ].IconTexture )
+							surface.SetMaterial( evolve.ranks[ pl:EV_GetRank() ].IconTexture )
 						else
-							surface.SetTexture( self.iconUser )
+							surface.SetMaterial( self.iconUser )
 						end
 						
 						surface.SetDrawColor( 255, 255, 255, math.Clamp( alpha * 2, 0, 255 ) )
@@ -105,7 +102,7 @@ else
 						
 						local col = evolve.ranks[ pl:EV_GetRank() ].Color or team.GetColor( pl:Team() )
 						col.a = math.Clamp( alpha * 2, 0, 255 )
-						draw.DrawText( pl:Nick(), "DefaultBold", drawPos.x + 28, drawPos.y + 5, col, 0 )
+						draw.DrawText( pl:Nick(), "DermaDefaultBold", drawPos.x + 28, drawPos.y + 5, col, 0 )
 					end
 				end
 			end

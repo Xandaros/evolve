@@ -43,13 +43,11 @@ if ( CLIENT ) then
 	
 	surface.CreateFont( "ScoreboardText", {
 		font = "coolvertica",
-		size = 16,
-		weight = 1000,
+		size = 12,
+		weight = 500,
 		antialias = true,
 		additive = false
 	})
-
-	--surface.CreateFont( "coolvetica", 22, 400, true, false, "EvolveScoreboardHeader" )
 end
 
 function PLUGIN:ScoreboardShow()
@@ -129,7 +127,7 @@ function PLUGIN:DrawUsergroup( playerinfo, usergroup, title, icon, y )
 	
 	surface.SetDrawColor( 168, 206, 116, 255 )
 	surface.DrawRect( self.X + 0.5, y, self.Width - 2, 22 )
-	surface.SetTexture( icon )
+	surface.SetMaterial( icon )
 	surface.SetDrawColor( 255, 255, 255, 255 )
 	surface.DrawTexturedRect( self.X + 15, y + 4, 14, 14 )
 	draw.SimpleText( title, "DefaultBold", self.X + 40, y + 16, Color( 39, 39, 39, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )

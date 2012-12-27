@@ -7,7 +7,7 @@ PLUGIN.Title = "Armor"
 PLUGIN.Description = "Set the armor of a player."
 PLUGIN.Author = "Overv"
 PLUGIN.ChatCommand = "armor"
-PLUGIN.Usage = "<players> [armor]"
+PLUGIN.Usage = "[players] [armor]"
 PLUGIN.Privileges = { "Armor" }
 
 function PLUGIN:Call( ply, args )
