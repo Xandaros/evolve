@@ -40,8 +40,8 @@ TAB.ConVarCheckboxes = {}
 
 function TAB:ApplySettings()
 	for _, v in pairs( self.ConVarSliders ) do
-		if ( GetConVar( v.ConVar ):GetInt() != v:GetValue() ) then
-			RunConsoleCommand( "ev", "convar", v.ConVar, v:GetValue() )
+		if ( GetConVar( v.ConVar ):GetInt() != math.floor( v:GetValue() ) ) then
+			RunConsoleCommand( "ev", "convar", v.ConVar, math.floor( v:GetValue() ) )
 		end
 	end
 	
@@ -68,9 +68,9 @@ end
 
 function TAB:Initialize( pnl )	
 	self.LimitsContainer = vgui.Create( "DPanelList", pnl )
-	self.LimitsContainer:SetPos( 0, 2 )
-	self.LimitsContainer:SetSize( self.Width - 170, pnl:GetParent():GetTall() - 33 )
-	self.LimitsContainer:SetSpacing( 9 )
+	self.LimitsContainer:SetPos( 2, 2 )
+	self.LimitsContainer:SetSize( self.Width - 164, pnl:GetParent():GetTall() - 32 )
+	self.LimitsContainer:SetSpacing( -5 )
 	self.LimitsContainer:SetPadding( 10 )
 	self.LimitsContainer:EnableHorizontal( true )
 	self.LimitsContainer:EnableVerticalScrollbar( true )
@@ -82,12 +82,15 @@ function TAB:Initialize( pnl )
 			self.applySettings = false
 		end
 	end
+	self.LimitsContainer.Paint = function( self )
+		draw.RoundedBox( 4, 2, 2, self:GetWide() - 6, self:GetTall() - 12, Color( 230, 230, 230, 255 ) )
+	end
 	
 	for i, cv in pairs( self.Limits ) do
 		if ( ConVarExists( cv[1] ) ) then
 			local cvSlider = vgui.Create( "DNumSlider", pnl )
 			cvSlider:SetText( cv[2] )
-			cvSlider:SetWide( self.LimitsContainer:GetWide() / 2 - 15 )
+			cvSlider:SetWide( self.LimitsContainer:GetWide() - 7 )
 			cvSlider:SetMin( 0 )
 			cvSlider:SetMax( 200 )
 			cvSlider:SetDecimals( 0 )
@@ -103,11 +106,14 @@ function TAB:Initialize( pnl )
 	
 	self.Settings = vgui.Create( "DPanelList", pnl )
 	self.Settings:SetPos( self.Width - 165, 2 )
-	self.Settings:SetSize( 165, pnl:GetParent():GetTall() - 33 )
+	self.Settings:SetSize( 166, pnl:GetParent():GetTall() - 32 )
 	self.Settings:SetSpacing( 9 )
 	self.Settings:SetPadding( 10 )
 	self.Settings:EnableHorizontal( true )
 	self.Settings:EnableVerticalScrollbar( true )
+	self.Settings.Paint = function( self )
+		draw.RoundedBox( 4, 4, 2, self:GetWide() - 16, self:GetTall() - 12, Color( 230, 230, 230, 255 ) )
+	end
 	
 	for i, cv in pairs( self.ConVars ) do
 		if ( ConVarExists( cv[1] ) ) then
