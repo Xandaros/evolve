@@ -19,7 +19,7 @@ function evolve:RegisterTab( tab )
 	tab:Initialize( tab.Panel )
 	tab:Update()
 	
-	MENU.TabContainer:AddSheet( tab.Title, tab.Panel, tab.Icon, false, false, tab.Description )
+	MENU.TabContainer:AddSheet( tab.Title, tab.Panel, "icon16/" .. tab.Icon .. ".png", false, false, tab.Description )
 	table.insert( MENU.Tabs, tab )
 end
 

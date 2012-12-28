@@ -5,7 +5,7 @@
 local TAB = {}
 TAB.Title = "Bans"
 TAB.Description = "Manage bans."
-TAB.Icon = "gui/silkicons/exclamation"
+TAB.Icon = "exclamation"
 TAB.Author = "Overv"
 TAB.Width = 520
 TAB.Privileges = { "Ban menu" }

@@ -4,7 +4,7 @@
 local TAB = {}
 TAB.Title = "Ranks"
 TAB.Description = "Manage ranks."
-TAB.Icon = "gui/silkicons/group"
+TAB.Icon = "group"
 TAB.Author = "Overv"
 TAB.Width = 340
 TAB.Privileges = { "Rank menu" }
@@ -271,7 +271,7 @@ function TAB:UpdatePrivileges()
 			line.Privilege = privilege
 			
 			line.State = vgui.Create( "DImage", line )
-			line.State:SetImage( "gui/silkicons/check_on_s" )
+			line.State:SetImage( "icon16/tick.png" )
 			line.State:SetSize( 16, 16 )
 			line.State:SetPos( self.Width * 0.875 - 12, 1 )
 			
@@ -320,7 +320,7 @@ function TAB:Update()
 			item.Rank = rank.ID
 			
 			item.Icon = vgui.Create( "DImage", item )
-			item.Icon:SetImage( "gui/silkicons/" .. rank.Icon )
+			item.Icon:SetImage( "icon16/" .. rank.Icon .. ".png" )
 			item.Icon:SetPos( 4, 4 )
 			item.Icon:SetSize( 14, 14 )
 			item.PaintOver = function()
@@ -376,7 +376,7 @@ function TAB:EV_RankCreated( id )
 	item.Rank = id
 	
 	item.Icon = vgui.Create( "DImage", item )
-	item.Icon:SetImage( "gui/silkicons/" .. rank.Icon )
+	item.Icon:SetImage( "icon16/" .. rank.Icon .. ".png" )
 	item.Icon:SetPos( 4, 4 )
 	item.Icon:SetSize( 14, 14 )
 	item.PaintOver = function()

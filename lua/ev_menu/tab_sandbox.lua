@@ -5,7 +5,7 @@
 local TAB = {}
 TAB.Title = "Sandbox"
 TAB.Description = "Manage sandbox settings."
-TAB.Icon = "gui/silkicons/world"
+TAB.Icon = "world"
 TAB.Author = "Overv"
 TAB.Width = 520
 TAB.Privileges = { "Sandbox menu" }

@@ -7,7 +7,7 @@ include( "tab_players_controls.lua" )
 local TAB = {}
 TAB.Title = "Players"
 TAB.Description = "Manage players on the server."
-TAB.Icon = "gui/silkicons/user"
+TAB.Icon = "user"
 TAB.Author = "Overv"
 TAB.Privileges = { "Player menu" }
 TAB.Width = 260

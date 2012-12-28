@@ -83,9 +83,9 @@ function PANEL:AddPlayer( ply )
 		end
 		
 		if ( evolve.ranks[ ply:EV_GetRank() ] ) then
-			surface.SetTexture( evolve.ranks[ ply:EV_GetRank() ].IconTexture )
+			surface.SetMaterial( evolve.ranks[ ply:EV_GetRank() ].IconTexture )
 		else
-			surface.SetTexture( iconUser )
+			surface.SetMaterial( iconUser )
 		end
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		surface.DrawTexturedRect( item:GetWide() - 20, 0, 16, 16 )

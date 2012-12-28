@@ -38,7 +38,26 @@ function PLUGIN:ChatTextChanged( str )
 		self.Suggestions = {}
 		
 		for _, v in pairs( evolve.plugins ) do
-			if ( v.ChatCommand and string.sub( v.ChatCommand, 0, #com ) == string.lower( com ) and #self.Suggestions < 4 ) then table.insert( self.Suggestions, { ChatCommand = string.sub( str, 1, 1 ) .. v.ChatCommand, Usage = v.Usage or "" } ) end
+			if (type(v.ChatCommand) == "table") then
+				for k,cmd in pairs(v.ChatCommand) do
+					local suggestion = {ChatCommand = string.sub(str, 1, 1) .. cmd}
+					
+					if (type(v.Usage) == "table") then
+						suggestion.Usage = v.Usage[k] or ""
+					else
+						suggestion.Usage = v.Usage or ""
+					end
+					
+					table.insert(self.Suggestions, suggestion)
+				end
+			else
+				if ( v.ChatCommand and string.sub( v.ChatCommand, 0, #com ) == string.lower( com ) and #self.Suggestions < 4 ) then
+					table.insert( self.Suggestions, {
+						ChatCommand = string.sub( str, 1, 1 ) .. v.ChatCommand,
+						Usage = v.Usage or ""
+					} )
+				end
+			end
 		end
 		table.SortByMember( self.Suggestions, "ChatCommand", function( a, b ) return a < b end )
 	else
