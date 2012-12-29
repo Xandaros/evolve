@@ -1,8 +1,8 @@
 "AddonInfo"
 {
-	"name"		"Evolve"
-	"version"		"1.0"
+	"name"			"Evolve"
+	"version"		"1.1.13" // major, minor, gmversion
 	"author_name"	"Overv"
 	"author_url"	"http://www.overvprojects.nl"
-	"info"		"An easy to use server administration mod."
+	"info"			"An easy to use server administration mod."
 }
