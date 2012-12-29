@@ -38,10 +38,18 @@ TAB.ConVars = {
 TAB.ConVarSliders = {}
 TAB.ConVarCheckboxes = {}
 
+local function round(n)
+	if n % 1 < 0.5 then
+		return math.floor(n)
+	else
+		return math.ceil(n)
+	end
+end
+
 function TAB:ApplySettings()
 	for _, v in pairs( self.ConVarSliders ) do
-		if ( GetConVar( v.ConVar ):GetInt() != math.floor( v:GetValue() ) ) then
-			RunConsoleCommand( "ev", "convar", v.ConVar, math.floor( v:GetValue() ) )
+		if ( GetConVar( v.ConVar ):GetInt() != round( v:GetValue() ) ) then
+			RunConsoleCommand( "ev", "convar", v.ConVar, round( v:GetValue() ) )
 		end
 	end
 	
