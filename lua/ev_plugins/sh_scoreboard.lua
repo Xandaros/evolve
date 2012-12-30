@@ -156,7 +156,7 @@ function PLUGIN:DrawUsergroup( playerinfo, usergroup, title, icon, y )
 		end
 	end
 	
-	return y + 10
+	return y
 end
 
 function PLUGIN:DrawPlayers()
