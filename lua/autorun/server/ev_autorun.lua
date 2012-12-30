@@ -6,7 +6,6 @@
 evolve = {}
 
 // Requirements
-if ( !glon ) then require( "glon" ) end
 //if ( !gatekeeper ) then require( "gatekeeper" ) end
 
 // Distribute clientside and shared files
@@ -14,7 +13,6 @@ AddCSLuaFile( "autorun/client/ev_autorun.lua" )
 AddCSLuaFile( "ev_framework.lua" )
 AddCSLuaFile( "ev_cl_init.lua" )
 AddCSLuaFile( "ev_menu/cl_menu.lua" )
-AddCSLuaFile("includes/modules/glon.lua")
 
 // Load serverside files
 include( "ev_framework.lua" )

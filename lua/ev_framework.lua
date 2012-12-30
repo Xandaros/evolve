@@ -350,7 +350,7 @@ function _R.Entity:UniqueID() if ( !self:IsValid() ) then return 0 end end
 function evolve:LoadPlayerInfo()
 	if ( file.Exists( "ev_playerinfo.txt", "DATA" ) ) then
 		debug.sethook()
-		self.PlayerInfo = glon.decode( file.Read( "ev_playerinfo.txt", "DATA" ) )
+		self.PlayerInfo = von.deserialize( file.Read( "ev_playerinfo.txt", "DATA" ) )
 	else
 		self.PlayerInfo = {}
 	end
@@ -358,7 +358,7 @@ end
 evolve:LoadPlayerInfo()
 
 function evolve:SavePlayerInfo()
-	file.Write( "ev_playerinfo.txt", glon.encode( self.PlayerInfo ) )
+	file.Write( "ev_playerinfo.txt", von.serialize( self.PlayerInfo ) )
 end
 
 function _R.Player:GetProperty( id, defaultvalue )	
@@ -461,10 +461,6 @@ end
 /*-------------------------------------------------------------------------------------------------------------------------
 	Ranks
 -------------------------------------------------------------------------------------------------------------------------*/
-
-// COMPATIBILITY
-evolve.compatibilityRanks = glon.decode( file.Read( "ev_ranks.txt", "DATA" ) )
-// COMPATIBILITY
 
 function _R.Player:EV_HasPrivilege( priv )
 	if ( evolve.ranks[ self:EV_GetRank() ] ) then
@@ -620,12 +616,12 @@ end
 -------------------------------------------------------------------------------------------------------------------------*/
 
 function evolve:SaveRanks()
-	file.Write( "ev_userranks.txt", glon.encode( evolve.ranks ) )
+	file.Write( "ev_userranks.txt", von.serialize( evolve.ranks ) )
 end
 
 function evolve:LoadRanks()
 	if ( file.Exists( "ev_userranks.txt", "DATA" ) ) then
-		evolve.ranks = glon.decode( file.Read( "ev_userranks.txt", "DATA" ) )
+		evolve.ranks = von.deserialize( file.Read( "ev_userranks.txt", "DATA" ) )
 	else
 		include( "ev_defaultranks.lua" )
 		evolve:SaveRanks()
@@ -1091,12 +1087,12 @@ end
 -------------------------------------------------------------------------------------------------------------------------*/
 
 function evolve:SaveGlobalVars()
-	file.Write( "ev_globalvars.txt", glon.encode( evolve.globalvars ) )
+	file.Write( "ev_globalvars.txt", von.serialize( evolve.globalvars ) )
 end
 
 function evolve:LoadGlobalVars()
 	if ( file.Exists( "ev_globalvars.txt", "DATA" ) ) then
-		evolve.globalvars = glon.decode( file.Read( "ev_globalvars.txt", "DATA" ) )
+		evolve.globalvars = von.deserialize( file.Read( "ev_globalvars.txt", "DATA" ) )
 	else
 		evolve.globalvars = {}
 		evolve:SaveGlobalVars()
