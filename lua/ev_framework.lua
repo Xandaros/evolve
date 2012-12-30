@@ -347,18 +347,20 @@ function _R.Entity:UniqueID() if ( !self:IsValid() ) then return 0 end end
 	Player information
 -------------------------------------------------------------------------------------------------------------------------*/
 
-function evolve:LoadPlayerInfo()
-	if ( file.Exists( "ev_playerinfo.txt", "DATA" ) ) then
-		debug.sethook()
-		self.PlayerInfo = von.deserialize( file.Read( "ev_playerinfo.txt", "DATA" ) )
-	else
-		self.PlayerInfo = {}
+if SERVER then
+	function evolve:LoadPlayerInfo()
+		if ( file.Exists( "ev_playerinfo.txt", "DATA" ) ) then
+			debug.sethook()
+			self.PlayerInfo = von.deserialize( file.Read( "ev_playerinfo.txt", "DATA" ) )
+		else
+			self.PlayerInfo = {}
+		end
 	end
-end
-evolve:LoadPlayerInfo()
+	evolve:LoadPlayerInfo()
 
-function evolve:SavePlayerInfo()
-	file.Write( "ev_playerinfo.txt", von.serialize( self.PlayerInfo ) )
+	function evolve:SavePlayerInfo()
+		file.Write( "ev_playerinfo.txt", von.serialize( self.PlayerInfo ) )
+	end
 end
 
 function _R.Player:GetProperty( id, defaultvalue )	
@@ -615,27 +617,29 @@ end
 	Rank management
 -------------------------------------------------------------------------------------------------------------------------*/
 
-function evolve:SaveRanks()
-	file.Write( "ev_userranks.txt", von.serialize( evolve.ranks ) )
-end
+if SERVER then
 
-function evolve:LoadRanks()
-	if ( file.Exists( "ev_userranks.txt", "DATA" ) ) then
-		evolve.ranks = von.deserialize( file.Read( "ev_userranks.txt", "DATA" ) )
-	else
-		include( "ev_defaultranks.lua" )
-		evolve:SaveRanks()
+	function evolve:SaveRanks()
+		file.Write( "ev_userranks.txt", von.serialize( evolve.ranks ) )
 	end
-	
-	-- Add resources
-	for _,rank in pairs(evolve.ranks) do
-		if rank.Icon and rank.Icon ~= "" then
-			resource.AddFile("icon16/" .. rank.Icon .. ".png")
+
+	function evolve:LoadRanks()
+		if ( file.Exists( "ev_userranks.txt", "DATA" ) ) then
+			evolve.ranks = von.deserialize( file.Read( "ev_userranks.txt", "DATA" ) )
+		else
+			include( "ev_defaultranks.lua" )
+			evolve:SaveRanks()
+		end
+		
+		-- Add resources
+		for _,rank in pairs(evolve.ranks) do
+			if rank.Icon and rank.Icon ~= "" then
+				resource.AddFile("icon16/" .. rank.Icon .. ".png")
+			end
 		end
 	end
+	evolve:LoadRanks()
 end
-
-if ( SERVER ) then evolve:LoadRanks() end
 
 function evolve:SyncRanks()
 	for _, pl in ipairs( player.GetAll() ) do evolve:TransferRanks( pl ) end
@@ -1086,19 +1090,21 @@ end
 	Global data system
 -------------------------------------------------------------------------------------------------------------------------*/
 
-function evolve:SaveGlobalVars()
-	file.Write( "ev_globalvars.txt", von.serialize( evolve.globalvars ) )
-end
-
-function evolve:LoadGlobalVars()
-	if ( file.Exists( "ev_globalvars.txt", "DATA" ) ) then
-		evolve.globalvars = von.deserialize( file.Read( "ev_globalvars.txt", "DATA" ) )
-	else
-		evolve.globalvars = {}
-		evolve:SaveGlobalVars()
+if SERVER then
+	function evolve:SaveGlobalVars()
+		file.Write( "ev_globalvars.txt", von.serialize( evolve.globalvars ) )
 	end
+
+	function evolve:LoadGlobalVars()
+		if ( file.Exists( "ev_globalvars.txt", "DATA" ) ) then
+			evolve.globalvars = von.deserialize( file.Read( "ev_globalvars.txt", "DATA" ) )
+		else
+			evolve.globalvars = {}
+			evolve:SaveGlobalVars()
+		end
+	end
+	evolve:LoadGlobalVars()
 end
-evolve:LoadGlobalVars()
 
 function evolve:SetGlobalVar( name, value )
 	evolve.globalvars[name] = value
