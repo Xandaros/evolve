@@ -93,7 +93,7 @@ else
 						
 						local col = evolve.ranks[ pl:EV_GetRank() ].Color or team.GetColor( pl:Team() )
 						col.a = math.Clamp( alpha * 2, 0, 255 )
-						draw.DrawText( pl:Nick(), "DermaDefaultBold", drawPos.x + 28, drawPos.y + 5, col, 0 )
+						draw.DrawText( pl:Nick(), "DefaultBold", drawPos.x + 28, drawPos.y + 5, col, 0 )
 					end
 				end
 			end
