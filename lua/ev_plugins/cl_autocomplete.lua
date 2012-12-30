@@ -40,15 +40,17 @@ function PLUGIN:ChatTextChanged( str )
 		for _, v in pairs( evolve.plugins ) do
 			if (type(v.ChatCommand) == "table") then
 				for k,cmd in pairs(v.ChatCommand) do
-					local suggestion = {ChatCommand = string.sub(str, 1, 1) .. cmd}
-					
-					if (type(v.Usage) == "table") then
-						suggestion.Usage = v.Usage[k] or ""
-					else
-						suggestion.Usage = v.Usage or ""
+					if (string.sub(cmd, 0, #com) == string.lower(com) and #self.Suggestions < 4) then
+						local suggestion = {ChatCommand = string.sub(str, 1, 1) .. cmd}
+						
+						if (type(v.Usage) == "table") then
+							suggestion.Usage = v.Usage[k] or ""
+						else
+							suggestion.Usage = v.Usage or ""
+						end
+						
+						table.insert(self.Suggestions, suggestion)
 					end
-					
-					table.insert(self.Suggestions, suggestion)
 				end
 			else
 				if ( v.ChatCommand and string.sub( v.ChatCommand, 0, #com ) == string.lower( com ) and #self.Suggestions < 4 ) then
