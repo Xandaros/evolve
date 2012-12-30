@@ -1117,6 +1117,8 @@ end
 	Log system
 -------------------------------------------------------------------------------------------------------------------------*/
 
+file.CreateDir("ev_logs/")
+
 function evolve:Log( str )
 	if ( CLIENT ) then return end
 	
@@ -1136,7 +1138,11 @@ end
 function evolve:PlayerLogStr( ply )
 	if ( ply:IsValid() ) then
 		if ( ply:IsPlayer() ) then
-			return ply:Nick() .. " [" .. ply:SteamID() .. "|" .. ply:IPAddress() .. "]"
+			local address = ply:IPAddress()
+			if ply:SteamID() == "BOT" then
+				address = "none"
+			end
+			return ply:Nick() .. " [" .. ply:SteamID() .. "|" .. address .. "]"
 		else
 			return ply:GetClass()
 		end
@@ -1158,6 +1164,9 @@ hook.Add( "PlayerInitialSpawn", "EV_LogSpawn", function( ply )
 end )
 
 hook.Add( "PlayerConnect", "EV_LogConnect", function( name, address )
+	if address == nil then
+		address = "none"
+	end
 	evolve:Log( name .. " [" .. address .. "] connected to the server." )
 end )
 
