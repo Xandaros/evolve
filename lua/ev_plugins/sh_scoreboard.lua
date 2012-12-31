@@ -16,6 +16,8 @@ resource.AddFile( "materials/gui/scoreboard_skull.vtf" )
 resource.AddFile( "materials/gui/scoreboard_skull.vmt" )
 resource.AddFile( "materials/gui/scoreboard_playtime.vtf" )
 resource.AddFile( "materials/gui/scoreboard_playtime.vmt" )
+resource.AddFile( "materials/gui/scoreboard_propbrick.vtf" )
+resource.AddFile( "materials/gui/scoreboard_propbrick.vmt" )
 
 local PLUGIN = {}
 PLUGIN.Title = "Scoreboard"
@@ -30,6 +32,7 @@ if ( CLIENT ) then
 	PLUGIN.TexFrags = surface.GetTextureID( "gui/scoreboard_frags" )
 	PLUGIN.TexDeaths = surface.GetTextureID( "gui/scoreboard_skull" )
 	PLUGIN.TexPlaytime = surface.GetTextureID( "gui/scoreboard_playtime" )
+	PLUGIN.TexProps = surface.GetTextureID( "gui/scoreboard_propbrick" )
 	
 	PLUGIN.Width = 687
 	
@@ -133,9 +136,10 @@ function PLUGIN:DrawUsergroup( playerinfo, usergroup, title, icon, y )
 	draw.SimpleText( title, "DefaultBold", self.X + 40, y + 16, Color( 39, 39, 39, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 	
 	self:DrawTexturedRect( self.TexPing, self.X + self.Width - 50, y + 4, 14, 14 )
+	self:DrawTexturedRect( self.TexPlaytime, self.X + self.Width - 100,  y + 4, 14, 14 )
 	self:DrawTexturedRect( self.TexDeaths, self.X + self.Width - 150.5, y + 4, 14, 14 )
 	self:DrawTexturedRect( self.TexFrags, self.X + self.Width - 190.5,  y + 4, 14, 14 )
-	self:DrawTexturedRect( self.TexPlaytime, self.X + self.Width - 100,  y + 4, 14, 14 )
+	self:DrawTexturedRect( self.TexProps, self.X + self.Width - 230.5,  y + 4, 14, 14 )
 	
 	y = y + 38
 	
@@ -145,6 +149,7 @@ function PLUGIN:DrawUsergroup( playerinfo, usergroup, title, icon, y )
 			draw.SimpleText( pl.Frags, "ScoreboardText", self.X + self.Width - 187, y, Color( 39, 39, 39, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 			draw.SimpleText( pl.Deaths, "ScoreboardText", self.X + self.Width - 147, y, Color( 39, 39, 39, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 			draw.SimpleText( pl.Ping, "ScoreboardText", self.X + self.Width - 50, y, Color( 39, 39, 39, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+			draw.SimpleText( pl.Propcount, "ScoreboardText", self.X + self.Width - 223, y, Color( 39, 39, 39, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP )
 			draw.SimpleText( self:FormatTime( pl.PlayTime ), "ScoreboardText", self.X + self.Width - 92, y, Color( 39, 39, 39, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP )
 			
 			y = y + 20
@@ -157,7 +162,9 @@ end
 function PLUGIN:DrawPlayers()
 	local playerInfo = {}
 	for _, v in pairs( player.GetAll() ) do
-		table.insert( playerInfo, { Nick = v:Nick(), Usergroup = v:EV_GetRank(), Frags = v:Frags(), Deaths = v:Deaths(), Ping = v:Ping(), PlayTime = evolve:Time() - v:GetNWInt( "EV_JoinTime" ) + v:GetNWInt( "EV_PlayTime" ) } )
+		table.insert( playerInfo, { Nick = v:Nick(), Usergroup = v:EV_GetRank(), Frags = v:Frags(), Deaths = v:Deaths(), Ping = v:Ping(), PlayTime = evolve:Time() - v:GetNWInt( "EV_JoinTime" ) + v:GetNWInt( "EV_PlayTime" )
+		, Propcount = v:GetNetworkedInt("Count.props") or 0 
+		} )
 	end
 	table.SortByMember( playerInfo, "Frags" )
 	
