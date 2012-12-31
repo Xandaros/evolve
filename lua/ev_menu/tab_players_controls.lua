@@ -57,6 +57,14 @@ derma.DefineControl( "EvolveButton", "Stylish menu button", PANEL, "DButton" )
 
 PANEL = {}
 
+surface.CreateFont( "EvolvePlayerListEntry", {
+	font = "coolvertica",
+	size = 12,
+	weight = 500,
+	antialias = true,
+	additive = false
+})
+
 local iconUser = surface.GetTextureID( "gui/silkicons/user" )
 
 function PANEL:AddPlayer( ply )
@@ -90,7 +98,7 @@ function PANEL:AddPlayer( ply )
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		surface.DrawTexturedRect( item:GetWide() - 20, 0, 16, 16 )
 		
-		draw.SimpleText( ply:Nick() or "", "Default", 28, 2, Color( 0, 0, 0, 255 ) )
+		draw.SimpleText( ply:Nick() or "", "EvolvePlayerListEntry", 28, 2, Color( 0, 0, 0, 255 ) )
 	end
 	
 	item.OnMousePressedOld = item.OnMousePressed
