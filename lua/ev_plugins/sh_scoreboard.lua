@@ -51,6 +51,26 @@ if ( CLIENT ) then
 		antialias = true,
 		additive = false
 	})
+	
+	net.Receive( "EV_PropCount", function( length )
+		local plr = net.ReadEntity()
+		plr.EV_PropCount = net.ReadInt( 14 )
+	end )
+else
+	timer.Simple( 1, function()
+		util.AddNetworkString( "EV_PropCount" )
+	end )
+end
+
+function PLUGIN:PlayerInitialSpawn( ply )
+	if ( SERVER ) then
+		for _, v in pairs( player.GetAll() ) do
+			net.Start( "EV_PropCount" )
+				net.WriteEntity( v )
+				net.WriteInt( v:GetNWInt( "Count.props" ) or 0, 14 )
+			net.Send( ply )
+		end
+	end
 end
 
 function PLUGIN:ScoreboardShow()
@@ -91,14 +111,12 @@ function PLUGIN:FormatTime( raw )
 end
 
 function PLUGIN:DrawInfoBar()
-	// Background
 	surface.SetDrawColor( 192, 218, 160, 255 )
 	surface.DrawRect( self.X + 15, self.Y + 110, self.Width - 30, 28 )
 	
 	surface.SetDrawColor( 168, 206, 116, 255 )
 	surface.DrawOutlinedRect( self.X + 15, self.Y + 110, self.Width - 30, 28 )
 	
-	// Content
 	local x = self.X + 24
 	local y = self.Y + 128
 	draw.SimpleText( "Currently playing ", "Default", x, y, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
@@ -163,7 +181,7 @@ function PLUGIN:DrawPlayers()
 	local playerInfo = {}
 	for _, v in pairs( player.GetAll() ) do
 		table.insert( playerInfo, { Nick = v:Nick(), Usergroup = v:EV_GetRank(), Frags = v:Frags(), Deaths = v:Deaths(), Ping = v:Ping(), PlayTime = evolve:Time() - v:GetNWInt( "EV_JoinTime" ) + v:GetNWInt( "EV_PlayTime" )
-		, Propcount = v:GetNetworkedInt("Count.props") or 0 
+		, Propcount = v.EV_PropCount or 0
 		} )
 	end
 	table.SortByMember( playerInfo, "Frags" )
@@ -191,7 +209,6 @@ function PLUGIN:HUDDrawScoreBoard()
 	if ( !self.DrawScoreboard ) then return end
 	if ( !self.Height ) then self.Height = 139 end
 	
-	// Update position
 	self.X = ScrW() / 2 - self.Width / 2
 	self.Y = ScrH() / 2 - ( self.Height ) / 2
 	

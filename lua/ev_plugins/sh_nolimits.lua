@@ -36,13 +36,19 @@ end
 if ( SERVER ) then
 	timer.Simple( 1, function()
 		PLUGIN.GetCount = _R.Player.GetCount
+		
 		function _R.Player:GetCount( limit, minus )
+			local oldc = PLUGIN.GetCount( self, limit, minus )
+			
+			net.Start( "EV_PropCount" )
+				net.WriteEntity( self )
+				net.WriteInt( PLUGIN.GetCount( self, limit, minus ), 14 )
+			net.Broadcast()
+			
 			if ( self.EV_NoLimits or self:EV_HasPrivilege( "No limits" ) ) then
-				PLUGIN.GetCount( self, limit, minus )
-				
 				return -1
 			else
-				return PLUGIN.GetCount( self, limit, minus )
+				return oldc
 			end
 		end
 	end )
