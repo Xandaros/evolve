@@ -53,6 +53,18 @@ if ( CLIENT ) then
 	})
 end
 
+if SERVER then
+	timer.Simple(1, function()
+		PLUGIN.GetCount = _R.Player.GetCount
+		function _R.Player:GetCount(limit, minus)
+			if limit == "props" then
+				timer.Simple(.1, function() PLUGIN.GetCount(self, limit, 0) end)
+			end
+			return PLUGIN.GetCount(self, limit, minus)
+		end
+	end)
+end
+
 function PLUGIN:ScoreboardShow()
 	if ( GAMEMODE.IsSandboxDerived and evolve.installed ) then
 		self.DrawScoreboard = true
