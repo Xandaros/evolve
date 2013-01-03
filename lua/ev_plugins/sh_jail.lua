@@ -98,7 +98,7 @@ PLUGIN.Author = "Overv"
 PLUGIN.ChatCommand = "setjail"
 
 function PLUGIN:Call( ply, args )
-	if ( ply:EV_IsAdmin() and ply:IsValid() ) then
+	if ( ply:EV_HasPrivilege( "Jail" ) ) then
 		evolve.jailPos = ply:GetEyeTrace().HitPos
 		evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has set the jail position." )
 	else
