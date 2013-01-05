@@ -48,5 +48,7 @@ https://github.com/Xandaros/evolve/issues
 Credits
 =======
 This version of evolve is currently maintained by Melon Gaming (MGN)
+
 The original author of evolve is Overv
+
 This version of evolve uses Vercas' Object Notation made by Vercas. (See: http://www.facepunch.com/showthread.php?t=1194008)
