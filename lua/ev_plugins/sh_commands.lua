@@ -23,7 +23,7 @@ function PLUGIN:Call( ply, args )
 					table.insert(commands, {plug.ChatCommand, plug.Usage, plug.Description})
 				else
 					for k, ChatCommand in ipairs( plug.ChatCommand ) do
-						local usage
+						local usage, description
 						
 						if (type(plug.Usage) == "table") then
 							usage = plug.Usage[k]
@@ -31,7 +31,13 @@ function PLUGIN:Call( ply, args )
 							usage = plug.Usage
 						end
 						
-						table.insert(commands, {ChatCommand, tostring(usage), plug.Description})
+						if (type(plug.Description) == "table") then
+							description = plug.Description[k]
+						else
+							description = plug.Description
+						end
+						
+						table.insert(commands, {ChatCommand, tostring(usage), description})
 					end
 				end
 			end

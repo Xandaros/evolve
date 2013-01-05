@@ -4,7 +4,7 @@
 
 local PLUGIN = {}
 PLUGIN.Title = "Change Map"
-PLUGIN.Description = "Change the map."
+PLUGIN.Description = {"Change the map.", "Change the gamemode."}
 PLUGIN.Author = "Overv"
 PLUGIN.ChatCommand = {"map", "gamemode"}
 PLUGIN.Usage = {"<map>", "<gamemode>"}
