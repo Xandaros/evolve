@@ -20,7 +20,7 @@ function PLUGIN:Call( ply, args )
 		for _, plug in ipairs( evolve.plugins ) do
 			if ( plug.ChatCommand ) then
 				if type(plug.ChatCommand) == "string" then
-					plug.ChatCommand = { plug.ChatCommand }
+					table.insert(commands, {plug.ChatCommand, plug.Usage, plug.Description})
 				else
 					for k, ChatCommand in ipairs( plug.ChatCommand ) do
 						local usage
@@ -47,9 +47,9 @@ function PLUGIN:Call( ply, args )
 		for k,cmd in pairs(commands) do
 			net.Start( "EV_Command" )
 				net.WriteBit( true )
-				net.WriteString( cmd[1] )
-				net.WriteString( cmd[2] )
-				net.WriteString( cmd[3] )
+				net.WriteString( cmd[1] or "" )
+				net.WriteString( cmd[2] or "" )
+				net.WriteString( cmd[3] or "" )
 			net.Send( ply )
 		end
 		
