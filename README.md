@@ -49,7 +49,7 @@ Credits
 =======
 Evolve is currently maintained by Melon Gaming (MGN)
 
-The original author of evolve is Overv
+The original author of evolve is Overv, with a lot of help of Divran
 
 Evolve uses Vercas' Object Notation made by Vercas. (See: http://www.facepunch.com/showthread.php?t=1194008)
 
