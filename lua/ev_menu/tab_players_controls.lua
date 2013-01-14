@@ -79,13 +79,10 @@ function PANEL:AddPlayer( ply )
 	
 	item.PaintOver = function()
 		if ( !IsValid( item.Player ) ) then
-			for i, it in pairs( self.SelectedItems ) do
-				if ( it == item ) then table.remove( self.SelectedItems, i ) break end
-			end
-			if ( #self.SelectedItems == 0 ) then self:SelectFirstItem() end
+			if ( #self:GetSelected() == 0 ) then self:SelectFirstItem() end
 			
-			self:RemoveItem( item )
-			self:Rebuild()
+			self:RemoveLine(item:GetID())
+			--self:Rebuild()
 			
 			return
 		end
