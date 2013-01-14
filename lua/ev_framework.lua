@@ -1135,6 +1135,7 @@ function evolve:Log( str )
 	end
 	
 	file.Append( logFile, "[" .. os.date() .. "] " .. str .. "\n" )
+	print("[" .. os.date() .. "] " .. str)
 end
 
 function evolve:PlayerLogStr( ply )
