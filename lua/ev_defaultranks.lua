@@ -27,7 +27,7 @@ evolve.ranks.admin.Icon = "shield"
 evolve.ranks.admin.UserGroup = "admin"
 evolve.ranks.admin.Immunity = 30
 evolve.ranks.admin.Privileges = {
-	"Admin chat", "Achievement", "Public admin message", "Arm", "Armor", "Ban", "Blind", "Bring", "Map changing", "Cleanup", "Convar changing", "Deaths", "Decal cleanup",
+	"Admin chat", "Achievement", "Public admin message", "Arm", "Armor", "Ban", "Blind", "Bring", "Map changing", "Gamemode changing", "Cleanup", "Convar changing", "Deaths", "Decal cleanup",
 	"Enter vehicle", "Exit vehicle", "Explode", "Extinguish", "Frags", "Freeze", "Gag", "Ghost", "Give weapon", "God", "Goto", "Health", "Ignite", "Imitate",
 	"Jail", "Kick", "Me", "Mute", "Noclip", "Noclip access", "No limits", "Notice", "Private messages", "Evade prop protection", "Ragdoll",
 	"Map reload", "Respawn", "Rocket", "Roll the Dice", "Slap", "Slay", "Spectate", "Speed", "Strip", "Teleport", "The time", "Unban", "Menu",
@@ -40,7 +40,7 @@ evolve.ranks.superadmin.Icon = "shield_add"
 evolve.ranks.superadmin.UserGroup = "superadmin"
 evolve.ranks.superadmin.Immunity = 50
 evolve.ranks.superadmin.Privileges = {
-	"Admin chat", "Achievement", "Public admin message", "Arm", "Armor", "Ban", "Permaban", "Blind", "Bring", "Map changing", "Cleanup", "Convar changing", "Deaths", "Decal cleanup",
+	"Admin chat", "Achievement", "Public admin message", "Arm", "Armor", "Ban", "Permaban", "Blind", "Bring", "Map changing", "Gamemode changing", "Cleanup", "Convar changing", "Deaths", "Decal cleanup",
 	"Enter vehicle", "Exit vehicle", "Explode", "Extinguish", "Frags", "Freeze", "Gag", "Ghost", "Give weapon", "God", "Goto", "Health", "Ignite", "Imitate",
 	"Jail", "Kick", "Me", "Mute", "Noclip", "Noclip access", "No limits", "Notice", "Private messages", "Evade prop protection", "Ragdoll",
 	"Map reload", "Respawn", "Rocket", "Roll the Dice", "Slap", "Slay", "Spectate", "Speed", "Strip", "Teleport", "The time", "Unban", "Menu",
