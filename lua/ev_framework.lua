@@ -972,7 +972,6 @@ if ( SERVER ) then
 				else
 					net.Send(ply)
 				end
-				--SendUserMessage( "EV_BanEntry", ply, tostring( uniqueid ), info.Nick, info.SteamID, info.BanReason, evolve:GetProperty( info.BanAdmin, "Nick" ), time )
 			end
 		end
 	end
@@ -997,7 +996,6 @@ if ( SERVER ) then
 			net.WriteString(a)
 			net.WriteUInt(length, 32)
 		net.Broadcast()
-		--SendUserMessage( "EV_BanEntry", nil, uid, evolve:GetProperty( uid, "Nick" ), evolve:GetProperty( uid, "SteamID" ), reason, a, length )
 		
 		-- Let SourceBans do the kicking or Evolve
 		if ( sourcebans ) then
@@ -1032,7 +1030,6 @@ if ( SERVER ) then
 		net.Start("EV_RemoveBanEntry")
 			net.WriteString(tostring(uid))
 		net.Broadcast()
-		--SendUserMessage( "EV_RemoveBanEntry", nil, tostring( uid ) )
 		
 		if ( sourcebans ) then
 			local admin

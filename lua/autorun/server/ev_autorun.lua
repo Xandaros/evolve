@@ -5,9 +5,6 @@
 // Set up Evolve table
 evolve = {}
 
-// Requirements
-//if ( !gatekeeper ) then require( "gatekeeper" ) end
-
 // Distribute clientside and shared files
 AddCSLuaFile( "autorun/client/ev_autorun.lua" )
 AddCSLuaFile( "ev_framework.lua" )

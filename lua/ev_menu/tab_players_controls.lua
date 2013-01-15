@@ -82,8 +82,6 @@ function PANEL:AddPlayer( ply )
 			if ( #self:GetSelected() == 0 ) then self:SelectFirstItem() end
 			
 			self:RemoveLine(item:GetID())
-			--self:Rebuild()
-			
 			return
 		end
 		

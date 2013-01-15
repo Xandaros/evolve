@@ -50,7 +50,6 @@ function PLUGIN:Call( ply, args )
 				if (Pos) then
 					pl:SetPos( Pos )
 				else
-					--evolve:Notify( pl, evolve.colors.red, "No free position was found. You were forcefully teleported in front of the player instead." )
 					pl:SetPos( ply:GetPos() + Vector(0,0,72 * i) )
 				end
 			end

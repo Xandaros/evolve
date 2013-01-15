@@ -14,8 +14,6 @@ end
 
 function PLUGIN:Call( ply, args )
 	local commands = {}
-	--table.SortByMember( commands, "ChatCommand", function( a, b ) return a > b end )
-	
 	if ( ply:IsValid() ) then
 		for _, plug in ipairs( evolve.plugins ) do
 			if ( plug.ChatCommand ) then
