@@ -8,7 +8,7 @@ PLUGIN.Title = "Ban"
 PLUGIN.Description = "Ban a player."
 PLUGIN.Author = "Overv"
 PLUGIN.ChatCommand = "ban"
-PLUGIN.Usage = "<player> [time=5] [reason]"
+PLUGIN.Usage = "<name/steamid> [time=5] [reason]"
 PLUGIN.Privileges = { "Ban", "Permaban" }
 
 function PLUGIN:Call( ply, args )
