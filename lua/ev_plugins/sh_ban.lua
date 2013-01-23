@@ -40,8 +40,12 @@ function PLUGIN:Call( ply, args )
 		/*-------------------------------------------------------------------------------------------------------------------------
 			Make sure the player exists and we're allowed to ban it
 		-------------------------------------------------------------------------------------------------------------------------*/
+
+		--Note: Make me fine! This is just for debugging purpose		
+		local plyImmunity = tonumber( evolve.ranks[ ply:EV_GetRank() ].Immunity )
+		local vicImmunity = tonumber( evolve.ranks[ evolve:GetProperty( uid, "Rank", "guest" ) ].Immunity )
 		
-		if ( !uid or ( tonumber( evolve.ranks[ ply:EV_GetRank() ].Immunity ) <= tonumber( evolve.ranks[ evolve:GetProperty( uid, "Rank", "guest" ) ].Immunity ) and ply != NULL ) ) then
+		if ( !uid or vicImmunity > plyImmunity ) then
 			evolve:Notify( ply, evolve.colors.red, evolve.constants.noplayers2 )
 			return
 		end
