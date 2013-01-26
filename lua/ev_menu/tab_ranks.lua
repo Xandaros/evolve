@@ -217,6 +217,9 @@ TAB.HL2Weps = {
 	weapon_rpg = "RPG",
 	weapon_ar2 = "AR2",
 	weapon_physgun = "Physgun",
+	weapon_annabelle = "Annabelle",
+	weapon_slam = "SLAM",
+	weapon_stunstick = "Stunstick",
 }
 
 function TAB:PrintNameByClass( class )
