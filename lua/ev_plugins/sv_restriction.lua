@@ -61,7 +61,8 @@ function PLUGIN:Initialize()
 		"@weapon_ar2",
 		"@weapon_physgun",
 		"@weapon_annabelle",
-		"@weapon_slam"
+		"@weapon_slam",
+		"@weapon_stunstick",
 	} )
 	
 	table.Add( evolve.privileges, weps )
