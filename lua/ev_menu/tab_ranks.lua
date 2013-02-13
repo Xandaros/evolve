@@ -340,7 +340,7 @@ end
 function TAB:EV_RankRemoved( rank )
 	for _, rankitem in pairs( self.RankList:GetLines() ) do
 		if ( rankitem.Rank == rank ) then
-			self.RankList:RemoveItem( rankitem )
+			self.RankList:RemoveLine( rankitem:GetID() )
 			break
 		end
 	end
