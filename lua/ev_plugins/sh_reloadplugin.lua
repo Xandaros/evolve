@@ -41,6 +41,7 @@ function PLUGIN:Call( ply, args )
 				table.remove( evolve.plugins, found )
 				evolve.pluginFile = plugin
 				include( "ev_plugins/" .. plugin )
+				evolve:ResolveDependencies()
 			end
 			
 			if ( prefix == "sh" or prefix == "cl" ) then

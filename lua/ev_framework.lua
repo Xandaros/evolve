@@ -24,6 +24,7 @@ evolve.category.administration = 1
 evolve.category.actions = 2
 evolve.category.punishment = 3
 evolve.category.teleportation = 4
+evolve.stagedPlugins = {}
 evolve.plugins = {}
 evolve.version = 179
 _R = debug.getregistry()
@@ -201,16 +202,47 @@ function evolve:LoadPlugins()
 			if ( prefix == "sh" or prefix == "cl" ) then AddCSLuaFile( "ev_plugins/" .. plugin ) end
 		end
 	end
+	evolve:ResolveDependencies()
+end
+
+function evolve:ResolvePluginDependencies(plugin)
+	if plugin.Dependencies ~= nil and #plugin.Dependencies > 0 then
+		for _,dependency in pairs(plugin.Dependencies) do
+			if evolve:FindStagedPlugin(dependency) == nil and evolve:FindPlugin(dependency) == nil then
+				return false, dependency
+			end
+		end
+	end
+	return true, nil
+end
+
+function evolve:ResolveDependencies()
+	while #evolve.stagedPlugins > 0 do
+		local plugin = evolve.stagedPlugins[1]
+		local success, dep = evolve:ResolvePluginDependencies(plugin)
+		if success then
+			table.insert(evolve.plugins, plugin)
+		else
+			evolve:Notify( evolve.colors.red, "Plugin dependency not met: Plugin " .. plugin.Title .. " requires " .. dep .. " to run!" )
+		end
+		table.remove(evolve.stagedPlugins,1)
+	end
 end
 
 function evolve:RegisterPlugin( plugin )
 	local pluginFile = evolve.pluginFile
 	if ( string.Left( pluginFile, string.find( pluginFile, "_" ) - 1 ) != "cl" or CLIENT ) then
-		table.insert( evolve.plugins, plugin )
+		table.insert( evolve.stagedPlugins, plugin )
 		plugin.File = pluginFile
 		if ( plugin.Privileges and SERVER ) then table.Add( evolve.privileges, plugin.Privileges ) table.sort( evolve.privileges ) end
 	else
 		table.insert( evolve.plugins, { Title = plugin.Title, File = pluginFile } )
+	end
+end
+
+function evolve:FindStagedPlugin(name)
+	for _, plugin in ipairs( evolve.stagedPlugins ) do
+		if ( plugin.Title == name ) then return plugin end
 	end
 end
 
