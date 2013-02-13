@@ -169,6 +169,19 @@ function evolve:FormatTime( t )
 	end
 end
 
+function evolve:SendNetMessage(name, players)
+	net.Start(name)
+	if CLIENT then
+		net.sendToServer()
+	else
+		if players == nil then
+			net.Broadcast()
+		else
+			net.Send(players)
+		end
+	end
+end
+
 /*-------------------------------------------------------------------------------------------------------------------------
 	Fonts
 -------------------------------------------------------------------------------------------------------------------------*/

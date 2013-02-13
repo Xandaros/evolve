@@ -18,8 +18,14 @@ function PLUGIN:GetArguments( str )
 	return args
 end
 
+function PLUGIN:Initialize()
+	util.AddNetworkString("EV_VoteEnd")
+	util.AddNetworkString("EV_VoteMenu")
+	util.AddNetworkString("EV_DoVote")
+end
+
 function PLUGIN:VoteEnd()
-	SendUserMessage( "EV_VoteEnd", nil )
+	evolve:SendNetMessage( "EV_VoteEnd", nil )
 	
 	local msg = ""	
 	for i = 1, #self.Options do
@@ -73,13 +79,13 @@ function PLUGIN:Call( ply, _, argstr )
 			self.Votes = {}
 			self.VotingPlayers = 0
 			
-			umsg.Start( "EV_VoteMenu" )
-				umsg.String( self.Question )
-				umsg.Short( #self.Options )
+			net.Start( "EV_VoteMenu" )
+				net.WriteString( self.Question )
+				net.WriteUInt( #self.Options, 8 )
 				for _, option in ipairs( self.Options ) do
-					umsg.String( option )
+					net.WriteString( option )
 				end
-			umsg.End()
+			net.Broadcast()
 			
 			timer.Create( "EV_VoteEnd", 10, 1, function() PLUGIN:VoteEnd() end )
 			
@@ -111,35 +117,44 @@ function PLUGIN:ShowVoteMenu( question, options )
 		votebut:SetText( option )
 		votebut:SetTall( 25 )
 		votebut.DoClick = function()
-			RunConsoleCommand( "EV_DoVote", i )
+			net.Start("EV_DoVote")
+				net.WriteUInt(i, 8)
+			net.SendToServer()
 			self.VoteWindow:Close()
 		end
 		
 		optionlist:AddItem( votebut )
 	end
 end
-
-usermessage.Hook( "EV_VoteMenu", function( um )
-	local question = um:ReadString()
-	local optionc = um:ReadShort()
-	local options = {}
+if CLIENT then
+	net.Receive( "EV_VoteMenu", function( length )
+		local question = net.ReadString()
+		local optionc = net.ReadUInt(8)
+		local options = {}
+		
+		for i = 1, optionc do
+			table.insert( options, net.ReadString() )
+		end
+		
+		PLUGIN:ShowVoteMenu( question, options )
+	end )
 	
-	for i = 1, optionc do
-		table.insert( options, um:ReadString() )
-	end
-	
-	PLUGIN:ShowVoteMenu( question, options )
-end )
+	net.Receive( "EV_VoteEnd", function(length)
+		if ( PLUGIN.VoteWindow and PLUGIN.VoteWindow.Close ) then
+			PLUGIN.VoteWindow:Close()
+		end
+	end )
+end
 
 if ( SERVER ) then
-	concommand.Add( "EV_DoVote", function( ply, _, args )
-		if ( PLUGIN.Question and !ply.EV_Voted and tonumber( args[1] ) and tonumber( args[1] ) <= #PLUGIN.Options ) then
-			local optionid = tonumber( args[1] )
+	net.Receive( "EV_DoVote", function( length, ply )
+		local id = net.ReadUInt(8)
+		if ( PLUGIN.Question and !ply.EV_Voted and id and (id <= #PLUGIN.Options) ) then
 			
-			if ( !PLUGIN.Votes[optionid] ) then
-				PLUGIN.Votes[optionid] = 1
+			if ( !PLUGIN.Votes[id] ) then
+				PLUGIN.Votes[id] = 1
 			else
-				PLUGIN.Votes[optionid] = PLUGIN.Votes[optionid] + 1
+				PLUGIN.Votes[id] = PLUGIN.Votes[id] + 1
 			end
 			
 			ply.EV_Voted = true
@@ -152,11 +167,5 @@ if ( SERVER ) then
 		end
 	end )
 end
-
-usermessage.Hook( "EV_VoteEnd", function()
-	if ( PLUGIN.VoteWindow and PLUGIN.VoteWindow.Close ) then
-		PLUGIN.VoteWindow:Close()
-	end
-end )
 
 evolve:RegisterPlugin( PLUGIN )
