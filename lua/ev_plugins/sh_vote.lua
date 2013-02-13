@@ -77,6 +77,7 @@ function PLUGIN:Call( ply, _, argstr )
 			table.remove( args, 1 )
 			self.Options = args
 			self.Votes = {}
+			self.PlayerVotes = {}
 			self.VotingPlayers = 0
 			
 			net.Start( "EV_VoteMenu" )
@@ -126,6 +127,20 @@ function PLUGIN:ShowVoteMenu( question, options )
 		optionlist:AddItem( votebut )
 	end
 end
+
+function PLUGIN:PlayerDisconnected(ply)
+	print("DISCONNECT!!!")
+	if ply.EV_Voted then
+		PLUGIN.VotingPlayers = PLUGIN.VotingPlayers - 1
+		PLUGIN.Votes[PLUGIN.PlayerVotes[ply]] = PLUGIN.Votes[PLUGIN.PlayerVotes[ply]] - 1
+		
+		if PLUGIN.VotingPlayers == #player.GetAll() then
+			timer.Destroy("EV_VoteEnd")
+			PLUGIN:VoteEnd()
+		end
+	end
+end
+
 if CLIENT then
 	net.Receive( "EV_VoteMenu", function( length )
 		local question = net.ReadString()
@@ -156,6 +171,7 @@ if ( SERVER ) then
 			else
 				PLUGIN.Votes[id] = PLUGIN.Votes[id] + 1
 			end
+			PLUGIN.PlayerVotes[ply] = id
 			
 			ply.EV_Voted = true
 			
