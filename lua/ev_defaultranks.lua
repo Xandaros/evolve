@@ -7,6 +7,7 @@ evolve.ranks.guest.Title = "Guest"
 evolve.ranks.guest.Icon = "user"
 evolve.ranks.guest.NotRemovable = true
 evolve.ranks.guest.UserGroup = "guest"
+evolve.ranks.guest.Color = Color(127,127,127)
 evolve.ranks.guest.Immunity = 0
 evolve.ranks.guest.Privileges = {
 	"Noclip access", "The time", "Player names"
@@ -16,6 +17,7 @@ evolve.ranks.respected = {}
 evolve.ranks.respected.Title = "Respected"
 evolve.ranks.respected.Icon = "user_add"
 evolve.ranks.respected.UserGroup = "guest"
+evolve.ranks.respected.Color = Color(0,255,0)
 evolve.ranks.respected.Immunity = 1
 evolve.ranks.respected.Privileges = {
 	"Noclip access", "The time", "Ratings visible", "Me", "Roll the Dice", "Private messages", "Player names"
@@ -25,6 +27,7 @@ evolve.ranks.admin = {}
 evolve.ranks.admin.Title = "Admin"
 evolve.ranks.admin.Icon = "shield"
 evolve.ranks.admin.UserGroup = "admin"
+evolve.ranks.admin.Color = Color(255,127,0)
 evolve.ranks.admin.Immunity = 30
 evolve.ranks.admin.Privileges = {
 	"Admin chat", "Achievement", "Public admin message", "Arm", "Armor", "Ban", "Blind", "Bring", "Map changing", "Gamemode changing", "Cleanup", "Convar changing", "Deaths", "Decal cleanup",
@@ -38,6 +41,7 @@ evolve.ranks.superadmin = {}
 evolve.ranks.superadmin.Title = "Super Admin"
 evolve.ranks.superadmin.Icon = "shield_add"
 evolve.ranks.superadmin.UserGroup = "superadmin"
+evolve.ranks.superadmin.Color = Color(255,0,0)
 evolve.ranks.superadmin.Immunity = 50
 evolve.ranks.superadmin.Privileges = {
 	"Admin chat", "Achievement", "Public admin message", "Arm", "Armor", "Ban", "Permaban", "Blind", "Bring", "Map changing", "Gamemode changing", "Cleanup", "Convar changing", "Deaths", "Decal cleanup",
@@ -52,4 +56,5 @@ evolve.ranks.owner.Title = "Owner"
 evolve.ranks.owner.Icon = "key"
 evolve.ranks.owner.ReadOnly = true
 evolve.ranks.owner.UserGroup = "superadmin"
+evolve.ranks.owner.Color = Color(0,127,255)
 evolve.ranks.owner.Immunity = 99
