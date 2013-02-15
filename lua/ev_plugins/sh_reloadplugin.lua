@@ -31,7 +31,7 @@ function PLUGIN:Call( ply, args )
 		end
 		
 		if ( found ) then
-			evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has reloaded plugin " .. evolve.plugins[found].Title .. "." )
+			evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has reloaded plugin ", evolve.colors.red, evolve.plugins[found].Title, evolve.colors.white, "." )
 			
 			local plugin = evolve.plugins[found].File
 			local title = evolve.plugins[found].Title
