@@ -28,6 +28,7 @@ function PLUGIN:VoteEnd()
 	evolve:SendNetMessage( "EV_VoteEnd", nil )
 	
 	local percentages = {}
+	local absolutes = {}
 	for i = 1, #self.Options do
 		local percent
 		if ( table.Count( self.Votes ) == 0 ) then
@@ -35,9 +36,10 @@ function PLUGIN:VoteEnd()
 		end
 		
 		percentages[i] = percent
+		absolutes[i] = self.Votes[i]
 	end
 	
-	self.Callback(percentages)
+	self.Callback(percentages, absolutes)
 	
 	self.Question = nil
 	for _, pl in ipairs( player.GetAll() ) do
@@ -90,7 +92,7 @@ function PLUGIN:Call( ply, _, argstr )
 		else
 			local question = args[1]
 			table.remove(args, 1)
-			self:VoteStart(question, args, function(percentages)
+			self:VoteStart(question, args, function(percentages, absolutes)
 				local msg = ""
 				
 				for i=1, #percentages do

@@ -1023,7 +1023,7 @@ if ( SERVER ) then
 					net.WriteString(info.Nick)
 					net.WriteString(info.SteamID)
 					net.WriteString(info.BanReason)
-					net.WriteString(evolve:GetProperty(info.BanAdmin, "Nick"))
+					net.WriteString(evolve:GetProperty(info.BanAdmin, "Nick") or "Console")
 					net.WriteUInt(time, 32)
 					
 				if ply == nil then
