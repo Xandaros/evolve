@@ -20,7 +20,7 @@ evolve.ranks.respected.UserGroup = "guest"
 evolve.ranks.respected.Color = Color(0,255,0)
 evolve.ranks.respected.Immunity = 1
 evolve.ranks.respected.Privileges = {
-	"Noclip access", "The time", "Ratings visible", "Me", "Roll the Dice", "Private messages", "Player names"
+	"Noclip access", "The time", "Ratings visible", "Me", "Roll the Dice", "Private messages", "Player names", "Votekick"
 }
 
 evolve.ranks.admin = {}
@@ -34,7 +34,7 @@ evolve.ranks.admin.Privileges = {
 	"Enter vehicle", "Exit vehicle", "Explode", "Extinguish", "Frags", "Freeze", "Gag", "Ghost", "Give weapon", "God", "Goto", "Health", "Ignite", "Imitate",
 	"Jail", "Kick", "Me", "Mute", "Noclip", "Noclip access", "No limits", "Notice", "Private messages", "Evade prop protection", "Ragdoll",
 	"Map reload", "Respawn", "Rocket", "Roll the Dice", "Slap", "Slay", "Spectate", "Speed", "Strip", "Teleport", "The time", "Unban", "Menu",
-	"Unlimited ammo", "Physgun players", "Ratings visible", "Player menu", "Player names"
+	"Unlimited ammo", "Physgun players", "Ratings visible", "Player menu", "Player names", "Votekick", "Votekick no cooldown"
 }
 
 evolve.ranks.superadmin = {}
@@ -48,7 +48,7 @@ evolve.ranks.superadmin.Privileges = {
 	"Enter vehicle", "Exit vehicle", "Explode", "Extinguish", "Frags", "Freeze", "Gag", "Ghost", "Give weapon", "God", "Goto", "Health", "Ignite", "Imitate",
 	"Jail", "Kick", "Me", "Mute", "Noclip", "Noclip access", "No limits", "Notice", "Private messages", "Evade prop protection", "Ragdoll",
 	"Map reload", "Respawn", "Rocket", "Roll the Dice", "Slap", "Slay", "Spectate", "Speed", "Strip", "Teleport", "The time", "Unban", "Menu",
-	"Unlimited ammo", "Physgun players", "Ratings visible", "Player menu", "Sandbox menu", "Player names"
+	"Unlimited ammo", "Physgun players", "Ratings visible", "Player menu", "Sandbox menu", "Player names", "Votekick", "Votekick no cooldown"
 }
 
 evolve.ranks.owner = {}
