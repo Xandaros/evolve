@@ -27,26 +27,41 @@ end
 function PLUGIN:VoteEnd()
 	evolve:SendNetMessage( "EV_VoteEnd", nil )
 	
-	local msg = ""	
+	local percentages = {}
 	for i = 1, #self.Options do
 		local percent
-		if ( table.Count( self.Votes ) == 0 ) then percent = 0 else percent = math.Round( ( self.Votes[i] or 0 ) / self.VotingPlayers * 100 ) end
-		
-		msg = msg .. self.Options[i] .. " (" .. percent .. "%)"
-		
-		if ( i == #self.Options - 1 ) then
-			msg = msg .. " and "
-		elseif ( i != #self.Options ) then
-			msg = msg .. ", "
+		if ( table.Count( self.Votes ) == 0 ) then
+			percent = 0 else percent = math.Round( ( self.Votes[i] or 0 ) / self.VotingPlayers * 100 )
 		end
+		
+		percentages[i] = percent
 	end
 	
-	evolve:Notify( evolve.colors.red, self.Question .. " ", evolve.colors.white, msg .. "." )
+	self.Callback(percentages)
 	
 	self.Question = nil
 	for _, pl in ipairs( player.GetAll() ) do
 		pl.EV_Voted = nil
 	end
+end
+
+function PLUGIN:VoteStart(question, options, callback)
+	self.Question = question
+	self.Options = options
+	self.Votes = {}
+	self.PlayerVotes = {}
+	self.VotingPlayers = 0
+	self.Callback = callback
+	
+	net.Start( "EV_VoteMenu" )
+		net.WriteString( self.Question )
+		net.WriteUInt( #self.Options, 8 )
+		for _, option in ipairs( self.Options ) do
+			net.WriteString( option )
+		end
+	net.Broadcast()
+		
+	timer.Create( "EV_VoteEnd", 10, 1, function() PLUGIN:VoteEnd() end )
 end
 
 function PLUGIN:Call( ply, _, argstr )
@@ -73,22 +88,23 @@ function PLUGIN:Call( ply, _, argstr )
 		elseif ( #args == 2 ) then
 			evolve:Notify( ply, evolve.colors.red, "There have to be at least two options!" )
 		else
-			self.Question = args[1]
-			table.remove( args, 1 )
-			self.Options = args
-			self.Votes = {}
-			self.PlayerVotes = {}
-			self.VotingPlayers = 0
-			
-			net.Start( "EV_VoteMenu" )
-				net.WriteString( self.Question )
-				net.WriteUInt( #self.Options, 8 )
-				for _, option in ipairs( self.Options ) do
-					net.WriteString( option )
+			local question = args[1]
+			table.remove(args, 1)
+			self:VoteStart(question, args, function(percentages)
+				local msg = ""
+				
+				for i=1, #percentages do
+					msg = msg .. self.Options[i] .. " (" .. percentages[i] .. "%)"
+					
+					if ( i == #self.Options - 1 ) then
+						msg = msg .. " and "
+					elseif ( i != #self.Options ) then
+						msg = msg .. ", "
+					end
 				end
-			net.Broadcast()
-			
-			timer.Create( "EV_VoteEnd", 10, 1, function() PLUGIN:VoteEnd() end )
+				
+				evolve:Notify( evolve.colors.red, self.Question .. " ", evolve.colors.white, msg .. "." )
+			end)
 			
 			evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has started the vote ", evolve.colors.red, self.Question, evolve.colors.white, "." )
 		end
@@ -129,7 +145,6 @@ function PLUGIN:ShowVoteMenu( question, options )
 end
 
 function PLUGIN:PlayerDisconnected(ply)
-	print("DISCONNECT!!!")
 	if ply.EV_Voted then
 		PLUGIN.VotingPlayers = PLUGIN.VotingPlayers - 1
 		PLUGIN.Votes[PLUGIN.PlayerVotes[ply]] = PLUGIN.Votes[PLUGIN.PlayerVotes[ply]] - 1
