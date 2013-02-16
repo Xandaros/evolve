@@ -31,7 +31,7 @@ TAB.Limits = {
 TAB.ConVars = {
 	{ "sbox_godmode", "Godmode" },
 	{ "sbox_noclip", "Noclip" },
-	{ "sbox_plpldamage", "No player damage" },
+	{ "sbox_playershurtplayers", "PvP" },
 	{ "sbox_weapons", "Weapons" },
 	{ "g_ragdoll_maxcount", "Keep NPC bodies", 8 }
 }
@@ -46,32 +46,8 @@ local function round(n)
 	end
 end
 
-function TAB:ApplySettings()
-	for _, v in pairs( self.ConVarSliders ) do
-		if ( GetConVar( v.ConVar ):GetInt() != round( v:GetValue() ) ) then
-			RunConsoleCommand( "ev", "convar", v.ConVar, round( v:GetValue() ) )
-		end
-	end
-	
-	for _, v in pairs( self.ConVarCheckboxes ) do
-		if ( GetConVar( v.ConVar ):GetBool() != v:GetChecked() ) then
-			RunConsoleCommand( "ev", "convar", v.ConVar, evolve:BoolToInt( v:GetChecked() ) * ( v.OnValue or 1 ) )
-		end
-	end
-end
-
 function TAB:IsAllowed()
 	return LocalPlayer():EV_HasPrivilege( "Sandbox menu" )
-end
-
-function TAB:Update()
-	for _, v in pairs( self.ConVarSliders ) do
-		v:SetValue( GetConVar( v.ConVar ):GetInt() )
-	end
-	
-	for _, v in pairs( self.ConVarCheckboxes ) do
-		v:SetChecked( GetConVar( v.ConVar ):GetInt() > 0 )
-	end
 end
 
 function TAB:Initialize( pnl )	
@@ -82,14 +58,6 @@ function TAB:Initialize( pnl )
 	self.LimitsContainer:SetPadding( 10 )
 	self.LimitsContainer:EnableHorizontal( true )
 	self.LimitsContainer:EnableVerticalScrollbar( true )
-	self.LimitsContainer.Think = function( self )
-		if ( input.IsMouseDown( MOUSE_LEFT ) ) then
-			self.applySettings = true
-		elseif ( !input.IsMouseDown( MOUSE_LEFT ) and self.applySettings ) then
-			TAB:ApplySettings()
-			self.applySettings = false
-		end
-	end
 	self.LimitsContainer.Paint = function( self )
 		draw.RoundedBox( 4, 2, 2, self:GetWide() - 6, self:GetTall() - 12, Color( 230, 230, 230, 255 ) )
 	end
@@ -104,6 +72,29 @@ function TAB:Initialize( pnl )
 			cvSlider:SetDecimals( 0 )
 			cvSlider:SetValue( GetConVar( cv[1] ):GetInt() )
 			cvSlider.ConVar = cv[1]
+			
+			local scratch_released = cvSlider.Scratch.OnMouseReleased
+			local slider_released = cvSlider.Slider.OnMouseReleased
+			local knob_released = cvSlider.Slider.Knob.OnMouseReleased
+
+			local function mousereleased(mousecode)
+				RunConsoleCommand("ev", "convar", cv[1], round(cvSlider:GetValue()))
+			end
+
+			function cvSlider.Scratch:OnMouseReleased(mousecode)
+				mousereleased(mousecode)
+				scratch_released(cvSlider.Scratch, mousecode)
+			end
+
+			function cvSlider.Slider:OnMouseReleased(mousecode)
+				mousereleased(mousecode)
+				slider_released(cvSlider.Slider, mousecode)
+			end
+
+			function cvSlider.Slider.Knob:OnMouseReleased(mousecode)
+				mousereleased(mousecode)
+				knob_released(cvSlider.Slider.Knob, mousecode)
+			end
 			
 			cvSlider.Label:SetDark(true)
 			self.LimitsContainer:AddItem( cvSlider )
@@ -130,9 +121,8 @@ function TAB:Initialize( pnl )
 			cvCheckbox:SetWide( self.Settings:GetWide() - 15 )
 			cvCheckbox:SetValue( GetConVar( cv[1] ):GetInt() > 0 )
 			cvCheckbox.ConVar = cv[1]
-			cvCheckbox.OnValue = cv[3]
-			cvCheckbox.DoClick = function( self )
-				TAB:ApplySettings()
+			cvCheckbox.OnChange = function( self, val )
+				RunConsoleCommand( "ev", "convar", cv[1], evolve:BoolToInt( val ) * ( cv[3] or 1 ) )
 			end
 			cvCheckbox.Label:SetDark(true)
 			self.Settings:AddItem( cvCheckbox )
