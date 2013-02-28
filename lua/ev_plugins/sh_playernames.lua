@@ -54,7 +54,7 @@ else
 					
 					if ( !trace.HitWorld ) then				
 						surface.SetFont( "DefaultBold" )
-						local w = surface.GetTextSize( pl:Nick() ) + 32
+						local w = surface.GetTextSize( pl:Nick():gsub( "&","--" ) ) + 32
 						local h = 24
 						
 						local pos = pl:GetShootPos()
