@@ -886,10 +886,28 @@ if ( SERVER ) then
 				if ( tonumber( args[3] ) == 1 ) then
 					if ( !table.HasValue( evolve.ranks[ rank ].Privileges, privilege ) ) then
 						table.insert( evolve.ranks[ rank ].Privileges, privilege )
+						if (string.sub(privilege,1,1)==":") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"entity ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
+						elseif (string.sub(privilege,1,1)=="#") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"tool ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
+						elseif (string.sub(privilege,1,1)=="@") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"swep ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
+						else
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"privilege ",evolve.colors.blue,privilege,evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
+						end
 					end
 				else
 					if ( table.HasValue( evolve.ranks[ rank ].Privileges, privilege ) ) then
 						table.remove( evolve.ranks[ rank ].Privileges, evolve:KeyByValue( evolve.ranks[ rank ].Privileges, privilege ) )
+						if (string.sub(privilege,1,1)==":") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"entity ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
+						elseif (string.sub(privilege,1,1)=="#") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"tool ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
+						elseif (string.sub(privilege,1,1)=="@") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"swep ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
+						else
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"privilege ",evolve.colors.blue,privilege,evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
+						end
 					end
 				end
 				
