@@ -8,7 +8,7 @@
 require("mysqloo");
 -- These are put here to lower the amount of upvalues and so they're grouped together
 -- They provide something like the documentation the SM ones do. 
-CreateConVar("sb_version", "1.41", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "The current version of the SourceBans.lua module");
+CreateConVar("sb_version", "1.41", bit.bor(FCVAR_SPONLY, FCVAR_REPLICATED, FCVAR_NOTIFY), "The current version of the SourceBans.lua module");
 -- This creates a fake concommand that doesn't exist but makes the engine think it does. Useful.
 AddConsoleCommand("sb_reload", "Doesn't do anything - Legacy from the SourceMod version.");
 
