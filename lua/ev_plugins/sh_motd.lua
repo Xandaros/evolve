@@ -25,7 +25,7 @@ function PLUGIN:OpenMotd(ply)
 end
 
 if (SERVER) then 
-	if (file.Exists("evolvemotd.txt", "DATA")) then
+	if file.Exists("evolvemotd.txt", "DATA") then
 		resource.AddFile("data/evolvemotd.txt")
 	end
 
@@ -84,7 +84,9 @@ if (CLIENT) then
 	end
 	
 	concommand.Add("evolve_motd", function(ply,cmd,args)
-		PLUGIN.MotdPanel:SetVisible(true)
+		if file.Exists("evolvemotd.txt", "DATA") then
+			PLUGIN.MotdPanel:SetVisible(true)
+		end
 	end)
 	
 	concommand.Add("evolve_startmotd", function(ply,cmd,args)
