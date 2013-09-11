@@ -32,7 +32,7 @@ end
 
 function PLUGIN:SpawnTrain( Pos, Direction )
 	local train = ents.Create( "prop_physics" )
-	train:SetModel("models/props_trainstation/train001.mdl")
+	train:SetModel("models/props_vehicles/train_boxcar.mdl")
 	train:SetAngles( Direction:Angle() )
 	train:SetPos( Pos )
 	train:Spawn()
