@@ -17,7 +17,7 @@ function PLUGIN:Call( ply, args )
 		
 		for _, pl in ipairs( players ) do
 			pl:SetMoveType( MOVETYPE_WALK )
-			self:SpawnTrain( pl:GetPos() + pl:GetForward() * 1000 + Vector(0,0,50), pl:GetForward() * -1 )
+			self:SpawnTrain( pl:GetPos() + pl:GetForward() * 1000 + Vector(0,0,120), pl:GetForward() * -1 )
 		end
 		
 		if ( #players > 0 ) then
@@ -30,21 +30,19 @@ function PLUGIN:Call( ply, args )
 	end
 end
 
+ 
 function PLUGIN:SpawnTrain( Pos, Direction )
-	local train = ents.Create( "prop_physics" )
-	train:SetModel("models/props_vehicles/train_boxcar.mdl")
-	train:SetAngles( Direction:Angle() )
-	train:SetPos( Pos )
-	train:Spawn()
-	train:Activate()
-	train:EmitSound( "ambient/alarms/train_horn2.wav", 100, 100 )
-	local phys = train:GetPhysicsObject()
-	if (phys) then
-		phys:SetVelocity( Direction * 50000 )
-	end
-	
-	timer.Create("TrainRemove_"..PLUGIN.Trains, 5, 1, function() train:Remove() end)
-	PLUGIN.Trains = PLUGIN.Trains + 1
+        local train = ents.Create( "prop_physics" )
+        train:SetModel("models/props_trainstation/train001.mdl")
+        train:SetAngles( Direction:Angle() + Angle(0,270,0) )
+        train:SetPos( Pos )
+        train:Spawn()
+        train:Activate()
+        train:EmitSound( "ambient/alarms/train_horn2.wav", 100, 100 )
+        train:GetPhysicsObject():SetVelocity( Direction * 100000 )
+       
+        --timer.Create( "TrainRemove_"..CurTime(), 5, 1, function( train ) train:Remove() end, train )
+        timer.Simple( 5, function() train:Remove() end )
 end
 
 function PLUGIN:Menu( arg, players )
