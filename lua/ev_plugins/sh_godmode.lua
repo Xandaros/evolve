@@ -12,14 +12,18 @@ PLUGIN.Privileges = { "God" }
 
 function PLUGIN:Call( ply, args )
 	if ( ply:EV_HasPrivilege( "God" ) ) then
-		local players = evolve:FindPlayer( args, ply, true )
+		local players = {}
 		local enabled = ( tonumber( args[ #args ] ) or 1 ) > 0
 		
-		for _, pl in ipairs( players ) do
-			if ( enabled ) then pl:GodEnable() else pl:GodDisable() end
-			pl.EV_GodMode = enabled
+		for _, pl in ipairs( evolve:FindPlayer( args, ply, true ) ) do
+			if ply:EV_IsAdmin() or ply:EV_GetRank() ~= pl:EV_GetRank() or ply == pl then
+				players[#players+1] = pl
+				
+				if ( enabled ) then pl:GodEnable() else pl:GodDisable() end
+				pl.EV_GodMode = enabled
+			end
 		end
-		
+				
 		if ( #players > 0 ) then
 			if ( enabled ) then
 				evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has enabled godmode for ", evolve.colors.red, evolve:CreatePlayerList( players ), evolve.colors.white, "." )
