@@ -761,100 +761,102 @@ function evolve:TransferRanks( ply )
 	end
 end
 
-net.Receive( "EV_Rank", function( length )
-	local id = string.lower( net.ReadString() )
-	local title = net.ReadString()
-	local created = evolve.ranks[id] == nil
+if CLIENT then
+	net.Receive( "EV_Rank", function( length )
+		local id = string.lower( net.ReadString() )
+		local title = net.ReadString()
+		local created = evolve.ranks[id] == nil
 	
-	evolve.ranks[id] = {
-		Title = title,
-		Icon = net.ReadString(),
-		UserGroup = net.ReadString(),
-		Immunity = net.ReadUInt(8),
-		Privileges = {},
-	}
+		evolve.ranks[id] = {
+			Title = title,
+			Icon = net.ReadString(),
+			UserGroup = net.ReadString(),
+			Immunity = net.ReadUInt(8),
+			Privileges = {},
+		}
 	
-	if ( net.ReadBit() == 1 ) then
-		evolve.ranks[id].Color = Color( net.ReadUInt(8), net.ReadUInt(8), net.ReadUInt(8) )
-	end
-	
-	evolve.ranks[id].IconTexture = Material( "icon16/" .. evolve.ranks[id].Icon .. ".png" )
-	
-	if ( created ) then
-		hook.Call( "EV_RankCreated", nil, id )
-	else
-		hook.Call( "EV_RankUpdated", nil, id )
-	end
-end )
-
-net.Receive( "EV_Privilege", function( length )
-	local id = net.ReadInt(16)
-	local name = net.ReadString()
-
-	evolve.privileges[ id ] = name
-end )
-
-net.Receive( "EV_RankPrivileges", function( length )
-	local rank = net.ReadString()
-	local privilegeCount = net.ReadInt(16)
-	
-	for i = 1, privilegeCount do
-		table.insert( evolve.ranks[ rank ].Privileges, evolve.privileges[ net.ReadInt(16) ] )
-	end
-end )
-
-net.Receive( "EV_RemoveRank", function( length )
-	local rank = net.ReadString()
-	hook.Call( "EV_RankRemoved", nil, rank )
-	evolve.ranks[ rank ] = nil
-end )
-
-net.Receive( "EV_RenameRank", function( length )
-	local rank = net.ReadString():lower()
-	evolve.ranks[ rank ].Title = net.ReadString()
-	
-	hook.Call( "EV_RankRenamed", nil, rank, evolve.ranks[ rank ].Title )
-end )
-
-net.Receive( "EV_RankPrivilege", function( length )
-	local rank = net.ReadString()
-	local priv = evolve.privileges[ net.ReadInt(16) ]
-	local enabled = net.ReadBit() == 1
-	
-	if ( enabled ) then
-		table.insert( evolve.ranks[ rank ].Privileges, priv )
-	else
-		table.remove( evolve.ranks[ rank ].Privileges, evolve:KeyByValue( evolve.ranks[ rank ].Privileges, priv ) )
-	end
-	
-	hook.Call( "EV_RankPrivilegeChange", nil, rank, priv, enabled )
-end )
-
-net.Receive( "EV_RankPrivilegeAll", function( length )
-	local rank = net.ReadString()
-	local enabled = net.ReadBit() == 1
-	local filter = net.ReadString()
-	
-	if ( enabled ) then
-		for _, priv in ipairs( evolve.privileges ) do
-			if ( ( ( #filter == 0 and !string.match( priv, "[@:#]" ) ) or string.Left( priv, 1 ) == filter ) and !table.HasValue( evolve.ranks[rank].Privileges, priv ) ) then				
-				hook.Call( "EV_RankPrivilegeChange", nil, rank, priv, true )
-				table.insert( evolve.ranks[ rank ].Privileges, priv )
-			end
+		if ( net.ReadBit() == 1 ) then
+			evolve.ranks[id].Color = Color( net.ReadUInt(8), net.ReadUInt(8), net.ReadUInt(8) )
 		end
-	else
-		local i = 1
+	
+		evolve.ranks[id].IconTexture = Material( "icon16/" .. evolve.ranks[id].Icon .. ".png" )
+	
+		if ( created ) then
+			hook.Call( "EV_RankCreated", nil, id )
+		else
+			hook.Call( "EV_RankUpdated", nil, id )
+		end
+	end )
+
+	net.Receive( "EV_Privilege", function( length )
+		local id = net.ReadInt(16)
+		local name = net.ReadString()
+
+		evolve.privileges[ id ] = name
+	end )
+
+	net.Receive( "EV_RankPrivileges", function( length )
+		local rank = net.ReadString()
+		local privilegeCount = net.ReadInt(16)
+	
+		for i = 1, privilegeCount do
+			table.insert( evolve.ranks[ rank ].Privileges, evolve.privileges[ net.ReadInt(16) ] )
+		end
+	end )
+
+	net.Receive( "EV_RemoveRank", function( length )
+		local rank = net.ReadString()
+		hook.Call( "EV_RankRemoved", nil, rank )
+		evolve.ranks[ rank ] = nil
+	end )
+
+	net.Receive( "EV_RenameRank", function( length )
+		local rank = net.ReadString():lower()
+		evolve.ranks[ rank ].Title = net.ReadString()
+	
+		hook.Call( "EV_RankRenamed", nil, rank, evolve.ranks[ rank ].Title )
+	end )
+
+	net.Receive( "EV_RankPrivilege", function( length )
+		local rank = net.ReadString()
+		local priv = evolve.privileges[ net.ReadInt(16) ]
+		local enabled = net.ReadBit() == 1
+	
+		if ( enabled ) then
+			table.insert( evolve.ranks[ rank ].Privileges, priv )
+		else
+			table.remove( evolve.ranks[ rank ].Privileges, evolve:KeyByValue( evolve.ranks[ rank ].Privileges, priv ) )
+		end
+	
+		hook.Call( "EV_RankPrivilegeChange", nil, rank, priv, enabled )
+	end )
+
+	net.Receive( "EV_RankPrivilegeAll", function( length )
+		local rank = net.ReadString()
+		local enabled = net.ReadBit() == 1
+		local filter = net.ReadString()
+	
+		if ( enabled ) then
+			for _, priv in ipairs( evolve.privileges ) do
+				if ( ( ( #filter == 0 and !string.match( priv, "[@:#]" ) ) or string.Left( priv, 1 ) == filter ) and !table.HasValue( evolve.ranks[rank].Privileges, priv ) ) then				
+					hook.Call( "EV_RankPrivilegeChange", nil, rank, priv, true )
+					table.insert( evolve.ranks[ rank ].Privileges, priv )
+				end
+			end
+		else
+			local i = 1
 		
-		while ( i <= #evolve.ranks[rank].Privileges ) do
-			if ( ( #filter == 0 and !string.match( evolve.ranks[rank].Privileges[i], "[@:#]" ) ) or string.Left( evolve.ranks[rank].Privileges[i], 1 ) == filter ) then
-				hook.Call( "EV_RankPrivilegeChange", nil, rank, evolve.ranks[rank].Privileges[i], false )
-				table.remove( evolve.ranks[rank].Privileges, i )
-			else
-				i = i + 1
+			while ( i <= #evolve.ranks[rank].Privileges ) do
+				if ( ( #filter == 0 and !string.match( evolve.ranks[rank].Privileges[i], "[@:#]" ) ) or string.Left( evolve.ranks[rank].Privileges[i], 1 ) == filter ) then
+					hook.Call( "EV_RankPrivilegeChange", nil, rank, evolve.ranks[rank].Privileges[i], false )
+					table.remove( evolve.ranks[rank].Privileges, i )
+				else
+					i = i + 1
+				end
 			end
 		end
-	end
-end )
+	end )
+end
 
 /*-------------------------------------------------------------------------------------------------------------------------
 	Rank modification
