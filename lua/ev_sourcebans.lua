@@ -32,6 +32,11 @@ sourcebans.SetConfig( "serverid", 1 )
 sourcebans.Activate()
 
 local function syncBans()
+	for uid, _ in pairs( evolve.PlayerInfo ) do
+		evolve:SetProperty( uid, "BanEnd", nil )
+		evolve:SetProperty( uid, "BanReason", nil )
+		evolve:SetProperty( uid, "BanAdmin", nil )
+	end
 	sourcebans.GetAllActiveBans( function( bans )
 		for _, ban in ipairs( bans ) do			
 			local uid = util.CRC( "gm_" .. ban.SteamID .. "_gm" )
@@ -60,6 +65,7 @@ local function syncBans()
 			end
 		end
 	end )
+	evolve:CommitProperties()
 end
 timer.Create( "EV_SourceBansSync", 300, 0, syncBans )
 timer.Simple( 1, syncBans )
