@@ -12,7 +12,7 @@ PLUGIN.Privileges = { "Ranking", "Rank modification" }
 
 function PLUGIN:Call( ply, args )
 	if ( #args <= 1 or ply:EV_HasPrivilege( "Ranking" ) ) then
-		local pl
+		local pl = {}
 		if ( string.match( args[1] or "", "STEAM_[0-5]:[0-9]:[0-9]+" ) ) then
 			local uid = evolve:UniqueIDByProperty( "SteamID", args[1] )
 			if ( uid ) then
@@ -24,7 +24,6 @@ function PLUGIN:Call( ply, args )
 				end
 			end
 		else
-			pl = {}
 			for _, p in ipairs( evolve:FindPlayer( args[1], ply, false, true ) ) do
 				table.insert( pl, { UniqueID = p:UniqueID(), Nick = p:Nick(), Rank = p:EV_GetRank(), Ply = p } )
 			end
