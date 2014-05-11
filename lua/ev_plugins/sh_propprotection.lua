@@ -1,7 +1,7 @@
 local PLUGIN = {}
 PLUGIN.Title = "Prop Protection";
 PLUGIN.Description = "A Plugin to prevent minges from spawning blacklisted props and touching others props";
-PLUGIN.Author = "[DARK]Grey and Northdegree";
+PLUGIN.Author = "Northdegree";
 PLUGIN.Privileges = { "Can Spawn Blacklist", "Manage BlackList", "Can Touch WorldProps"};
 PLUGIN.ChatCommand = "friends"
 PLUGIN.Usage = "<add/remove/get> (Name/SteamID)"

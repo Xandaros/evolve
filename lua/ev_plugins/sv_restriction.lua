@@ -12,7 +12,7 @@ require ("player_manager")
 local PLUGIN = {}
 PLUGIN.Title = "Restriction"
 PLUGIN.Description = "Restricts weapons."
-PLUGIN.Author = "[DARK]Grey and Overv"
+PLUGIN.Author = "Overv"
 ForcePMTest = false
 if SERVER then
 	util.PrecacheModel( "models/player/kleiner.mdl" )
