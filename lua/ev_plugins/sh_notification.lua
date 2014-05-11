@@ -38,7 +38,7 @@ if ( CLIENT ) then
 		local time = net.ReadUInt(8)
 		local msg = net.ReadString()
 		
-		GAMEMODE:AddNotify( msg, NOTIFY_GENERIC, time )
+		notification.AddLegacy( msg, NOTIFY_GENERIC, time )
 		surface.PlaySound( "ambient/water/drip" .. math.random( 1, 4 ) .. ".wav" )
 	end )
 end
