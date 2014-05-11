@@ -16,12 +16,10 @@ function PLUGIN:Call( ply, args )
 		local enabled = ( tonumber( args[ #args ] ) or 1 ) > 0
 		
 		for _, pl in ipairs( evolve:FindPlayer( args, ply, true ) ) do
-			if ply:EV_IsAdmin() or ply:EV_GetRank() ~= pl:EV_GetRank() or ply == pl then
-				players[#players+1] = pl
-				
-				if ( enabled ) then pl:GodEnable() else pl:GodDisable() end
-				pl.EV_GodMode = enabled
-			end
+			players[#players+1] = pl
+			
+			if ( enabled ) then pl:GodEnable() else pl:GodDisable() end
+			pl.EV_GodMode = enabled
 		end
 				
 		if ( #players > 0 ) then
