@@ -87,6 +87,13 @@ function PLUGIN:Initialize()
 			local _, __, class = string.find( val, "([%w_]*)%.lua" )
 			table.insert( tools, "#" .. class )
 		end
+		
+		// wiremod support
+		local stools,_ = file.Find( "wire/stools/*.lua", "LUA" )
+		for _, val in ipairs(stools) do
+			local _, __, class = string.find( val, "([%w_]*)%.lua" )
+			table.insert( tools, "#" .. class )
+		end
 	end
 	
 	table.Add( evolve.privileges, tools )
