@@ -1,4 +1,4 @@
-/*-------------------------------------------------------------------------------------------------------------------------
+﻿/*-------------------------------------------------------------------------------------------------------------------------
 	NoRecoil a player
 -------------------------------------------------------------------------------------------------------------------------*/
 
@@ -54,7 +54,7 @@ if SERVER then
 					end
 				end
 			end)
-			evolve:Notify( ply, evolve.colors.white, "Your spawn protection lasts for ", evolve.colors.red, " 15 seconds ", evolve.colors.white," or until you draw a weapon." )
+			evolve:Notify( ply, evolve.colors.white, "Your spawn protection lasts for ", evolve.colors.red, " 15 seconds ", evolve.colors.white, " or until you draw a weapon. ", evolve.colors.red, "GO AWAY SCARY SYMBOLS" )
 		else
 			ply:SetNWBool( "EV_SpawnProtected", false )
 		end
