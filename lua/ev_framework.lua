@@ -894,6 +894,8 @@ if ( SERVER ) then
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"tool ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
 						elseif (string.sub(privilege,1,1)=="@") then
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"swep ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
+						elseif (string.sub(privilege,1,1)=="&") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"player model ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
 						else
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"privilege ",evolve.colors.blue,privilege,evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
 						end
@@ -907,6 +909,8 @@ if ( SERVER ) then
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"tool ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
 						elseif (string.sub(privilege,1,1)=="@") then
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"swep ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
+						elseif (string.sub(privilege,1,1)=="&") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"player model ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
 						else
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"privilege ",evolve.colors.blue,privilege,evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
 						end

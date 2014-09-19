@@ -16,6 +16,12 @@ function PLUGIN:Call( ply, args )
 		
 		for _, pl in ipairs( players ) do
 			pl:Spawn()
+			local nametest = string.lower(gmod.GetGamemode().Name)
+			if (nametest == "trouble in terrorist town" ) then	
+				pl:SetTeam( TEAM_TERROR )
+				pl:Spawn()
+				print("Respawning in TTT...")
+			end
 		end
 		
 		if ( #players > 0 ) then

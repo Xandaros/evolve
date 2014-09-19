@@ -19,13 +19,30 @@ function PLUGIN:Call( ply, args )
 			if ( enabled ) then
 				if ( !pl.EV_Ragdolled and pl:Alive() ) then
 					pl:DrawViewModel( false )
-					pl:StripWeapons()
+          pl:DrawWorldModel( false )
+          
+          pl.active_weapon = pl:GetActiveWeapon():GetClass()
+          --[[local weapons = pl:GetWeapons()
+          pl.weapon_store = {}
+          for k,v in pairs(weapons) do
+            table.insert(pl.weapon_store, {
+                class=v:GetClass(),
+                hold=v:GetHoldType(),
+                clip1=v:Clip1(),
+                clip2=v:Clip2(),
+                nextP=v:GetNextPrimaryFire(),
+                nextS=v:GetNextSecondaryFire()
+            })
+          end
+          pl:StripWeapons()]]
 					
 					local doll = ents.Create( "prop_ragdoll" )
 					doll:SetModel( pl:GetModel() )
 					doll:SetPos( pl:GetPos() )
 					doll:SetAngles( pl:GetAngles() )
 					doll:Spawn()
+          local phys = doll:GetPhysicsObject()
+          phys:SetVelocity(pl:GetVelocity());
 					doll:Activate()
 					
 					pl.EV_Ragdoll = doll
@@ -36,10 +53,32 @@ function PLUGIN:Call( ply, args )
 					pl.EV_Ragdolled = true
 				end
 			else
+        pl:UnSpectate()
+        pl:DrawViewModel( true )
+        pl:DrawWorldModel( true )
 				pl:SetNoTarget( false )
 				pl:SetParent()
-				pl.EV_Ragdolled = false
-				pl:Spawn()
+        local phys = pl.EV_Ragdoll:GetPhysicsObject()
+        pl:SetVelocity(phys:GetVelocity())
+        pl.EV_Ragdoll:Remove()
+        
+        --[[pl:SetSuppressPickupNotices(true)
+        for k,v in pairs( pl.weapon_store ) do
+          pl:Give(v['class'])
+          local weapon = pl:GetWeapon(v['class'])
+          
+          weapon:SetHoldType(v['hold'])
+          weapon:SetClip1(v['clip1'])
+          weapon:SetClip2(v['clip2'])
+          weapon:SetNextPrimaryFire(v['nextP'])
+          weapon:SetNextSecondaryFire(v['nextS'])
+        end
+        pl:SetSuppressPickupNotices(false)]]
+        pl:SelectWeapon(pl.active_weapon)
+        
+        pl.active_weapon = nil
+        pl.weapon_store = nil
+        pl.EV_Ragdolled = false
 			end
 		end
 		
