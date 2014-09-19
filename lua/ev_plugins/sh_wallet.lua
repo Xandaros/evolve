@@ -20,7 +20,7 @@ function PLUGIN:Call( ply, args )
 		end
 		
 		if ( #players > 0 ) then
-			evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has given ", evolve.colors.red, evolve:CreatePlayerList( players ), evolve.colors.green, GAMEMODE.Config.currency..amount, evolve.colors.white, "." )
+			evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has given ", evolve.colors.red, evolve:CreatePlayerList( players ), Color(123,178,68,255), GAMEMODE.Config.currency..amount, evolve.colors.white, "." )
 		else
 			evolve:Notify( ply, evolve.colors.red, evolve.constants.noplayers )
 		end
