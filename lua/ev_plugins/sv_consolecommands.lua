@@ -26,8 +26,15 @@ function PLUGIN:CCommand( ply, com, cargs )
 	evolve:Log( evolve:PlayerLogStr( ply ) .. " ran command '" .. command .. "' with arguments '" .. table.concat( args, " " ) .. "' via console." )
 	
 	for _, plugin in ipairs( evolve.plugins ) do
-		if ( plugin.ChatCommand == string.lower( command or "" ) ) then
-			plugin:Call( ply, args )
+		if ( plugin.ChatCommand == command or ( type( plugin.ChatCommand ) == "table" and table.HasValue( plugin.ChatCommand, command ) ) ) then
+			evolve.SilentNotify = string.Left( com, 1 ) == "@"
+			res, ret = pcall( plugin.Call, plugin, ply, args, string.sub( com, #command + 3 ), command )
+			evolve.SilentNotify = false
+
+			if ( !res ) then
+				evolve:Notify( evolve.colors.red, "Plugin '" .. plugin.Title .. "' failed with error:" )
+				evolve:Notify( evolve.colors.red, ret )
+			end
 			return ""
 		end
 	end
