@@ -1,29 +1,59 @@
-/*
+--[[
 Requires that sh_advert.lua be installed. 
 Usage of the menu requires both "Advert 3" and "Advert 3 Menu" privileges be set to your rank.
 ReSync button allows for variations from the server's advert list and the client's advert list.
 
-Any problems, let me know! thatcutekiwi@gmail.com . Thanks! Saria Parkar <3
+Any problems, let me know! thatcutekiwi@gmail.com . Thanks! Saria Parkar <3]]
 
 local TAB = {}
 TAB.Title = "Adverts"
 TAB.Description = "Add, remove, modify adverts."
-TAB.Icon = "gui/silkicons/page_white_wrench"
-TAB.Author = "SariaFace"
+TAB.Icon = "feed_edit"
+TAB.Author = "SariaFace & EntranceJew"
 TAB.Width = 520
 TAB.Privileges = { "Advert 3 Menu" }
 
+function SendAdverts(ply)
+  local tosend = nil
+  if ( SERVER ) and (adverts and #adverts.Stored) then
+    tosend = adverts.Stored
+  elseif ( CLIENT ) and (adverts) then
+    tosend = adverts
+  else
+    -- well this isn't right
+    return false
+  end
+  
+  net.Start("EV_Adverts3")
+  net.WriteString("send")
+  net.WriteTable(tosend)
+    
+  if ( SERVER ) and ( IsValid( ply ) and ply:IsPlayer() ) then
+    net.Send(ply)
+  else
+    net.SendToServer()
+  end
+end
+
+net.Receive( "EV_Adverts3", function( length, ply )
+  local mtype = net.ReadString()
+  
+  if mtype == "get" then
+    SendAdverts(ply)
+  elseif mtype == "send" then
+    local inbound = net.ReadTable()
+    if ( SERVER ) then
+      adverts.Stored = inbound
+    else
+      adverts = inbound
+    end
+  end
+end )
+
 if (SERVER) then
-	function SendAdvertsList(target, cmd, args)
-		if (target) then
-			if (adverts and #adverts.Stored) then
-				datastream.StreamToClients(target, "EV_Adverts3_ReceiveList", adverts.Stored)
-			end
-		end
-	end
-	concommand.Add("EV_Adverts3_RequestList", SendAdvertsList)
+  util.AddNetworkString("EV_Adverts3")
 else
-	local NewAdPanelReg = {}
+  local NewAdPanelReg = {}
 	function NewAdPanelReg:Init()
 		self:SetPos( 40, (ScrH()/3)*2)
 		self:SetSize(560, 62)
@@ -127,19 +157,24 @@ else
 			timer.Simple(1.0, function() TAB:Update() end)
 			self:Remove()
 		end
-		
 	end
 	vgui.Register("NewAdPanel", NewAdPanelReg, "DFrame")
-	
-	adverts = {}
-	function SyncAdverts(hdl, id, enc, dec)
-		adverts = dec
-	end
-	datastream.Hook("EV_Adverts3_ReceiveList", SyncAdverts)
-	RunConsoleCommand("EV_Adverts3_RequestList")
 end
+
+function TAB:GetAdverts(ply)
+  net.Start("EV_Adverts3")
+  net.WriteString("get")
+  if ( SERVER ) and ( IsValid( ply ) and ply:IsPlayer() ) then
+    net.Send(ply)
+  else
+    net.SendToServer()
+  end
+end
+
 --===================================================================================--
 function TAB:Initialize( pnl )
+  adverts = {}
+  
 	self.AdList = vgui.Create( "DListView", pnl )
 	self.AdList:SetSize( self.Width, pnl:GetParent():GetTall() - 58 )
 	self.AdList:SetMultiSelect( false )
@@ -170,7 +205,9 @@ function TAB:Initialize( pnl )
 	self.Tog:SetPos( self.Width - 145, pnl:GetParent():GetTall() - 53 )
 	self.Tog:SetText( "Toggle" )
 	self.Tog.DoClick = function()
-		local id = self.AdList:GetSelected()[1]:GetValue(1)
+    if self.AdList:GetSelected() then
+      local id = self.AdList:GetSelected()[1]:GetValue(1)
+    end
 		RunConsoleCommand("ev", "advert3", "toggle", id)
 		adverts[id]["OnState"] = !adverts[id]["OnState"]
 		self.AdList:GetSelected()[1]:SetValue(5, adverts[id]["OnState"])
@@ -186,7 +223,7 @@ function TAB:Initialize( pnl )
 		adverts[id] = nil
 		self:Update()
 	end
-	timer.Simple(1.5, function() TAB:Update() end)	
+	timer.Simple(1.5, function() TAB:Request() end)	
 end
 
 function TAB:Update()
@@ -198,11 +235,12 @@ function TAB:Update()
 end
 
 function TAB:Request()
-	RunConsoleCommand("EV_Adverts3_RequestList")
+	self:GetAdverts()
 	timer.Simple(2, function() TAB:Update() end)
 end
 
 function TAB:IsAllowed()
 	return LocalPlayer():EV_HasPrivilege( "Advert 3 Menu" )
 end
+
 evolve:RegisterTab( TAB )
