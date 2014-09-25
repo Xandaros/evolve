@@ -266,7 +266,7 @@ function evolve:RegisterPlugin( plugin )
 		table.insert( evolve.stagedPlugins, plugin )
 		plugin.File = pluginFile
 		if ( plugin.Privileges and SERVER ) then table.Add( evolve.privileges, plugin.Privileges ) table.sort( evolve.privileges ) end
-    if ( plugin.Settings ) then evolve:RegisterSettings( plugin.Settings ) end
+    if ( plugin.Settings ) then evolve:RegisterPluginSettings( plugin ) end
 	else
 		table.insert( evolve.plugins, { Title = plugin.Title, File = pluginFile } )
 	end
@@ -519,12 +519,12 @@ hook.Add( "PlayerSpawnedEffect", "EV_SpawnHook", function( ply, model, ent ) ent
 hook.Add( "PlayerSpawnedRagdoll", "EV_SpawnHook", function( ply, model, ent ) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " spawned ragdoll '" .. model .. "'." ) end )
 
 -- darkrp hooking abound
-hook.Add( "playerboughtcustomvehicle", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought custom vehicle '" .. entityTable.entity .. "'." ) end )
+--[[hook.Add( "playerboughtcustomvehicle", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought custom vehicle '" .. entityTable.entity .. "'." ) end )
 hook.Add( "playerboughtvehicle", "EV_SpawnHook", function( ply, ent, cost) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought vehicle '" .. ent:GetModel() .. "'." ) end )
 hook.Add( "playerboughtshipment", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought shipment '" .. entityTable.entity .. "'." ) end )
 hook.Add( "playerboughtdoor", "EV_SpawnHook", function( ply, ent, cost ) return true end )
 hook.Add( "playerboughtcustomentity", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " custom entity '" .. entityTable.entity .. "'." ) end )
-hook.Add( "playerboughtpistol", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought pistol '" .. entityTable.entity .. "'." ) end )
+hook.Add( "playerboughtpistol", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought pistol '" .. entityTable.entity .. "'." ) end )]]
 
 evolve.AddCount = _R.Player.AddCount
 function _R.Player:AddCount( type, ent )
@@ -1237,6 +1237,19 @@ function evolve:RegisterSettings( sets )
   table.Merge(evolve.settings, sets)
   table.sort(evolve.settings)
   return evolve.settings
+end
+function evolve:RegisterPluginSettings( plugin )
+  local desc = plugin.Description or 'Mysterious Plugin, No Description Set!'
+  local icon = plugin.Icon or 'help'
+  local label = plugin.Title or 'Unknown'
+  local value = plugin.Settings or {}
+  evolve.settings.category_plugins.value['category_'..string.lower(label)] = {
+    desc = desc,
+    icon = icon,
+    label = label,
+    stype = 'category',
+    value = value
+  }
 end
 
 function evolve:SetSetting( name, value )
