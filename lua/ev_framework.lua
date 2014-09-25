@@ -26,6 +26,23 @@ evolve.category.punishment = 3
 evolve.category.teleportation = 4
 evolve.stagedPlugins = {}
 evolve.plugins = {}
+evolve.settings = {
+  category_general = {
+    label = 'General',
+    desc = 'This is for general evolve settings.',
+    stype = 'category',
+    icon = 'home',
+    value = {
+    }
+  },
+  category_plugins = {
+        label = 'Plugins',
+        desc = 'Your plugin settings! For You!',
+        stype = 'category',
+        icon = 'plugin',
+        value = {}
+  }
+}
 evolve.version = 179
 _R = debug.getregistry()
 
@@ -37,6 +54,7 @@ if SERVER then
 	util.AddNetworkString("EV_PluginFile")
 	util.AddNetworkString("EV_Privilege")
 	util.AddNetworkString("EV_Rank")
+  util.AddNetworkString("EV_Settings")
 	util.AddNetworkString("EV_RankPrivileges")
 	util.AddNetworkString("EV_RenameRank")
 	util.AddNetworkString("EV_RankPrivilege")
@@ -248,6 +266,7 @@ function evolve:RegisterPlugin( plugin )
 		table.insert( evolve.stagedPlugins, plugin )
 		plugin.File = pluginFile
 		if ( plugin.Privileges and SERVER ) then table.Add( evolve.privileges, plugin.Privileges ) table.sort( evolve.privileges ) end
+    if ( plugin.Settings ) then evolve:RegisterSettings( plugin.Settings ) end
 	else
 		table.insert( evolve.plugins, { Title = plugin.Title, File = pluginFile } )
 	end
@@ -464,10 +483,6 @@ function evolve:SetProperty( uniqueid, id, value )
 end
 
 function evolve:CommitProperties()
-	/*-------------------------------------------------------------------------------------------------------------------------
-		Check if a cleanup would be convenient
-	-------------------------------------------------------------------------------------------------------------------------*/
-	
 	local count = table.Count( evolve.PlayerInfo )
 	
 	if ( count > 800 ) then
@@ -502,6 +517,14 @@ hook.Add( "PlayerSpawnedNPC", "EV_SpawnHook", function( ply, ent ) ent.EV_Owner 
 hook.Add( "PlayerSpawnedVehicle", "EV_SpawnHook", function( ply, ent ) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " spawned vehicle '" .. ent:GetClass() .. "'." ) end )
 hook.Add( "PlayerSpawnedEffect", "EV_SpawnHook", function( ply, model, ent ) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " spawned effect '" .. model .. "'." ) end )
 hook.Add( "PlayerSpawnedRagdoll", "EV_SpawnHook", function( ply, model, ent ) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " spawned ragdoll '" .. model .. "'." ) end )
+
+-- darkrp hooking abound
+hook.Add( "playerboughtcustomvehicle", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought custom vehicle '" .. entityTable.entity .. "'." ) end )
+hook.Add( "playerboughtvehicle", "EV_SpawnHook", function( ply, ent, cost) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought vehicle '" .. ent:GetModel() .. "'." ) end )
+hook.Add( "playerboughtshipment", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought shipment '" .. entityTable.entity .. "'." ) end )
+hook.Add( "playerboughtdoor", "EV_SpawnHook", function( ply, ent, cost ) return true end )
+hook.Add( "playerboughtcustomentity", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " custom entity '" .. entityTable.entity .. "'." ) end )
+hook.Add( "playerboughtpistol", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought pistol '" .. entityTable.entity .. "'." ) end )
 
 evolve.AddCount = _R.Player.AddCount
 function _R.Player:AddCount( type, ent )
@@ -1163,6 +1186,89 @@ else
 		local id = net.ReadString()
 		hook.Call( "EV_BanRemoved", nil, id )
 		evolve.bans[id] = nil
+	end )
+end
+
+
+/*-------------------------------------------------------------------------------------------------------------------------
+	Settings system
+-------------------------------------------------------------------------------------------------------------------------*/
+
+--[[ 
+  todo:
+  declare setting types,
+  add some junk in PLUGIN and TAB loading for settings
+  allow for user-specific settings
+  LOCK THIS WAY DOWN
+]]
+
+if SERVER then
+	function evolve:SaveSettings()
+    -- will probably have a client version at some point
+		file.Write( "ev_settings.txt", von.serialize( evolve.settings ) )
+	end
+
+	function evolve:LoadSettings()
+		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
+			evolve.settings = von.deserialize( file.Read( "ev_settings.txt", "DATA" ) )
+		else
+			evolve.settings = {}
+			evolve:SaveSettings()
+		end
+	end
+	evolve:LoadSettings()
+  
+  net.Receive( "EV_Settings", function( length, ply )    
+    -- on = sending, off = requesting
+    local doit = net.ReadBit()
+    if ( IsValid( ply ) and ply:IsPlayer() ) then
+      if doit then
+        local sets = net.ReadTable()
+        evolve.settings = sets
+        evolve:SaveSettings()
+      else
+        evolve:SendSettings(ply)
+      end
+    end
+	end )
+end
+
+function evolve:RegisterSettings( sets )
+  table.Merge(evolve.settings, sets)
+  table.sort(evolve.settings)
+  return evolve.settings
+end
+
+function evolve:SetSetting( name, value )
+	evolve.settings[name] = value
+	--evolve:SaveSettings()
+end
+
+function evolve:GetSetting( name, default )
+	return evolve.settings[name] or default
+end
+
+function evolve:SendSettings( ply )
+  --todo: secure params
+  net.Start("EV_Settings")
+  net.WriteBit(1)
+  net.WriteTable(evolve.settings)
+  if CLIENT then
+    net.SendToServer()
+  else
+    net.Send(ply)
+  end
+end
+
+if CLIENT then
+  net.Receive( "EV_Settings", function( length )
+    -- on = sending, off = requesting
+    local doit = net.ReadBit()
+    if doit then
+      evolve.settings = net.ReadTable()
+    else
+      evolve:SendSettings()
+    end
 	end )
 end
 
