@@ -2,13 +2,25 @@
 	Tab with settings
 -------------------------------------------------------------------------------------------------------------------------*/
 
+--[[
+  @TODO: settings in general
+  * Put the console var handling general code into SetSetting?
+  * Implement setting domains (server/client/shared -- do domain checks so that one user can't overwrite the settings of another with higher privs)
+  * Bind settings to permissions.
+  * Implement string validators.
+  * Search feature by building a list of "searchable" text that references the tree node, will require buildcategories to make each setting and put it in the grave.
+  * 
+  @TODO: framework overhaul
+  * make the menu have more methods to call on registered TABs, Open, Close, Hide
+]]
+
 local TAB = {}
 TAB.Title = "Settings"
 TAB.Description = "Manage evolution settings and preferences."
 TAB.Icon = "page_edit"
 TAB.Author = "EntranceJew"
 TAB.Width = 520
-TAB.Privileges = { "Settings" }
+TAB.Privileges = { "Settings", "Settings: Modify", "Settings: Send To Server" }
 
 TAB.CatWidth = 166
 
@@ -19,20 +31,14 @@ TAB.SettingsTree = nil
 --[[
   this is mapped:
     global.nodes['category1'].nodes['category2']
+  which references settings items by key:
+    global.nodes['category1'].items['sbox_maxvehicles']
 ]]
 TAB.Scroll = nil
 TAB.Layout = nil
 TAB.GraveYard = nil
 
-TAB.Categories = {}
---[[
-  this is mapped:
-    global.nodes['category1'].nodes['category2']
-]]
---[[
-  this WAS mapped:
-    global['category1']['category2'].sets
-]]
+
 TAB.Controls = {}
 --[[
  this is mapped:
@@ -87,6 +93,34 @@ local testsettings = {
 					    value = true,
 					    default = false},
 				},
+      },
+      category_settings = {
+				label = 'Settings',
+				desc = "Control how your settings control other things.\nThis is going to get confusing fast.",
+				stype = 'category',
+				icon = 'wrench',
+				value = {
+					settings_overload_servercfg = {
+					    label = 'Overload server.cfg',
+					    desc = 'If enabled, this will the LoadSettings to execute after server.cfg -- overwriting any values defined there.',
+					    stype = 'bool',
+					    value = true,
+					    default = false},
+				},
+			},
+      category_hud = {
+				label = 'HUD',
+				desc = "Specially modify how your HUD controls.",
+				stype = 'category',
+				icon = 'overlays',
+				value = {
+					hud_noises = {
+					    label = 'HUD Sounds',
+					    desc = 'If enabled, this will play beepy noises when your hud monitors get dangerously low.',
+					    stype = 'bool',
+					    value = true,
+					    default = true},
+				},
 			},
 		},
 	},
@@ -108,8 +142,20 @@ evolve:RegisterSettings( testsettings )
 function TAB:IsAllowed()
 	return LocalPlayer():EV_HasPrivilege( "Settings" )
 end
+
 -- functions used by buildsettings
 function TAB:CreateLimit( pnl, name, item )
+  --@WARNING: This won't update properly if the element 
+  if item.isconvar then
+    if ConVarExists( name ) then
+      --@TODO: Make it so that the server auto-executes these
+      --item.value = GetConVarNumber( name )
+      --evolve:GetSetting(name, 0)
+    else
+      -- no fake convars allowed
+      return false
+    end
+  end
   local elm = vgui.Create( "DNumSlider", pnl )
   pnl:SetTall(32)
   elm:SetTall(32)
@@ -122,12 +168,12 @@ function TAB:CreateLimit( pnl, name, item )
   elm:SetValue( item.value )
   elm.Label:SetDark(true)
   self:SetFocusCallbacks( elm.TextArea )
-  pnl.NumSlider = elm
+  elm.TextArea.OnEnter = mousereleased
+  pnl.NumSlider = elm.TextArea
   
   -- boring handler overloading
   local function mousereleased(mousecode)
-    evolve:SetSetting(name, math.Round(elm:GetValue())) --@TODO setting the decimals goes here
-    evolve:SendSettings()
+    evolve:SetSetting(name, math.Round(elm:GetValue()))
   end
   
   local scratch_released = elm.Scratch.OnMouseReleased
@@ -153,6 +199,15 @@ function TAB:CreateLimit( pnl, name, item )
 end
 
 function TAB:CreateString( pnl, name, item )
+  if item.isconvar then
+    if ConVarExists( name ) then
+      --item.value = GetConVarString( name )
+      --item already has value given from server
+    else
+      -- no fake convars allowed
+      return false
+    end
+  end
   local helm = vgui.Create( "DLabel", pnl )
   helm:SetWide(135)
   helm:SetText( item.label )
@@ -171,15 +226,34 @@ function TAB:CreateString( pnl, name, item )
   pnl.TextEntry = elm
   
   -- boring handler overloading
+  local parent = self
   elm.OnEnter = function(self)
-    evolve:SetSetting(name, elm:GetValue())
-    evolve:SendSettings()
+    evolve:SetSetting(name, self:GetValue())
   end
   
   return pnl
 end
 
 function TAB:CreateBool( pnl, name, item )
+  --[[
+    g_ragdoll_maxcount = {
+      label = "Keep NPC bodies",
+      desc = "Toggle.",
+      stype = "bool",
+      value = 0,
+      default = 0,
+      multiplier = 8,
+      isconvar = true,
+    },
+  ]]
+  if item.isconvar then
+    if ConVarExists( name ) then
+      --item.value = GetConVarNumber( name )
+    else
+      -- no fake convars allowed
+      return false
+    end
+  end
   local helm = vgui.Create( "DLabel", pnl )
   helm:SetWide(135)
   helm:SetText( item.label )
@@ -198,9 +272,9 @@ function TAB:CreateBool( pnl, name, item )
   pnl.CheckBox = elm
   
   -- boring handler overloading
+  local parent = self
   elm.OnChange = function(self)
-    evolve:SetSetting(name, elm:GetValue())
-    evolve:SendSettings()
+    evolve:SetSetting(name, self:GetChecked())
   end
   
   return pnl
@@ -208,7 +282,7 @@ end
 
 --[[TAB:Update()]]
 
-function TAB:BuildCategories( atree, acat, aset, adepth )
+function TAB:BuildCategories( atree, aset, adepth )
   --[[ Mission:
     1) Create all the "self.SettingsTree" nodes.
     2) Set an event so that when the node is clicked it calls OpenToPath( tblPath )
@@ -216,10 +290,9 @@ function TAB:BuildCategories( atree, acat, aset, adepth )
   ]]
   --self:BuildCategories2( self.SettingsTree, evolve.settings, self.Categories )
   --self:BuildCategories( self.SettingsTree, evolve.settings, self.Categories )
-  print("DEBUG: BuildCategories2 -- entering")
+  --print("DEBUG: BuildCategories2 -- entering")
   
   local tree = atree
-  local cat = acat
   local set = aset
   local path = {}
   --[[if type(apath)=="string" then
@@ -232,41 +305,37 @@ function TAB:BuildCategories( atree, acat, aset, adepth )
   end]]
   local depth = adepth or 1
   if adepth~= nil then
-    print("DEBUG: BuildCategories2 -- 'adepth' wasn't nil, incrementing.")
+    --print("DEBUG: BuildCategories2 -- 'adepth' wasn't nil, incrementing.")
     depth = adepth+1
   else
-    print("DEBUG: BuildCategories2 -- 'adepth' was nil, at entrypoint depth.")
+    --print("DEBUG: BuildCategories2 -- 'adepth' was nil, at entrypoint depth.")
   end
   
   
   assert(tree~=nil, "GOT NIL IN PLACE OF TREE NODE")
-  print("DEBUG: BuildCategories2 -- Investigating tree.")
+  --print("DEBUG: BuildCategories2 -- Investigating tree.")
   --PrintTable(tree)
 	if tree.nodes==nil then
-    print("DEBUG: BuildCategories2 -- 1: Tree @ depth has no nodes, adding node stub.")
+    --print("DEBUG: BuildCategories2 -- 1: Tree @ depth has no nodes, adding node stub.")
 		tree.nodes={}
 	else
-    print("DEBUG: BuildCategories2 -- 2: Tree @ depth has nodes, we must be in an item with multiple children.")
+    --print("DEBUG: BuildCategories2 -- 2: Tree @ depth has nodes, we must be in an item with multiple children.")
   end
   
-  assert(istable(cat), "GOT NON-TABLE CATEGORY NODE")
-  print("DEBUG: BuildCategories2 -- Investigating cat shaped like: ")
-  PrintTable(cat)
-	if cat.nodes==nil then
-    print("DEBUG: BuildCategories2 -- 1: Cat @ depth has no nodes, adding node stub.")
-		cat.nodes={}
-	else
-    print("DEBUG: BuildCategories2 -- 2: Cat @ depth has nodes, we must be in an item with multiple children.")
+  if tree.items==nil then
+    tree.items={}
+  else
+    --same as above.
   end
   
   assert(istable(set), "GOT NON-TABLE SETTINGS")
-  print("DEBUG: BuildCategories2 -- Beginning settings iteration in table shaped like:")
-  PrintTable(set)
+  --print("DEBUG: BuildCategories2 -- Beginning settings iteration in table shaped like:")
+  --PrintTable(set)
 	for k,v in pairs(set) do
     if v.stype==nil then
-      print("DEBUG: BuildCategories2 -- Ignoring malformed element '"..k.."' ...")
+      --print("DEBUG: BuildCategories2 -- Ignoring malformed element '"..k.."' ...")
     else
-      print("DEBUG: BuildCategories2 -- Inside setting '"..v.label.."' of type '"..v.stype.."'...")
+      --print("DEBUG: BuildCategories2 -- Inside setting '"..v.label.."' of type '"..v.stype.."'...")
       if v.stype == 'category' then
         local node = tree:AddNode( v.label )
         node:SetIcon( "icon16/"..v.icon..".png" )
@@ -275,16 +344,16 @@ function TAB:BuildCategories( atree, acat, aset, adepth )
         
         local parent = self
         node.DoClick = function(self)
-          print("doclick: "..v.label.." got clicked on @ depth # "..depth)
+          --print("doclick: "..v.label.." got clicked on @ depth # "..depth)
           local dpath = {}
           local brk = true
           local work = self
           while brk do
             if work.ej_parent~= nil then
-              print("doclick: added '"..work.ej_parent.."' to stack")
+              --print("doclick: added '"..work.ej_parent.."' to stack")
               table.insert(dpath, 1, work.ej_parent)
             else
-              print("doclick: couldn't find attribute ej_parent, assumed done")
+              --print("doclick: couldn't find attribute ej_parent, assumed done")
               brk = false
             end
             work = work:GetParentNode()
@@ -294,80 +363,89 @@ function TAB:BuildCategories( atree, acat, aset, adepth )
         
         -- add tree child
         tree.nodes[v.label] = node
-        cat.nodes[v.label] = v.value --assign category as a reference to the position in evolve.settings
         
-        print("DEBUG: BuildCategories2 -- Recursing!!!")
-        self:BuildCategories( tree.nodes[v.label], cat.nodes[v.label], v.value, depth )
-        print("DEBUG: BuildCategories2 -- Returned from recursion!!!")
+        --print("DEBUG: BuildCategories2 -- Recursing!!!")
+        self:BuildCategories( tree.nodes[v.label], v.value, depth )
+        --print("DEBUG: BuildCategories2 -- Returned from recursion!!!")
       else
-        print("DEBUG: BuildCategories2 -- Ignoring non-category '"..v.label.."' of type '"..v.stype.."'.")
+        table.insert(tree.items, k)
+        --print("DEBUG: BuildCategories2 -- Ignoring non-category '"..v.label.."' of type '"..v.stype.."'.")
       end
     end
 	end
-  print("DEBUG: BuildCategories2 -- Iterated over all items at current depth of '"..depth.."'")
+  --print("DEBUG: BuildCategories2 -- Iterated over all items at current depth of '"..depth.."'")
 end
 
 
 function TAB:BuildSettings( tblPath )
-  print("DEBUG: BuildSettings -- entering...")
+  --print("DEBUG: BuildSettings -- entering...")
   for k,v in pairs(self.Controls) do
     if v:IsValid() then
       if v:GetParent() == self.Layout then
-        print("DEBUG: BuildSettings -- existing control '"..k.."' moved to grave.")
+        --print("DEBUG: BuildSettings -- existing control '"..k.."' moved to grave.")
         v:SetParent(self.GraveYard)
       elseif v:GetParent() == self.GraveYard then
-        print("DEBUG: BuildSettings -- control '"..k.."' was already in the grave.")
+        --print("DEBUG: BuildSettings -- control '"..k.."' was already in the grave.")
       else
         assert(false, "RENEGADE CONTROL: "..k)
       end
     else
       --assert(false, "UNDEAD CONTROL ESCAPED GRAVEYARD: "..k)
       v=nil
-      print("DEBUG: BuildSettings -- invalid control '"..k.."' erased.")
+      --print("DEBUG: BuildSettings -- invalid control '"..k.."' erased.")
     end
   end
   -- since we graved all the children, we should refresh the shape of our scrollbar
   self.Layout:SetSize(self.Scroll:GetSize())
   
-	local settings = self.Categories
+  local settings = self.SettingsTree
 	for _,v in pairs(tblPath) do
 		if settings.nodes[v]==nil then
-      print("DEBUG: BuildSettings -- "..v.." NON-BREAK ("..table.concat(tblPath, "\\")..")")
+      --print("DEBUG: BuildSettings -- "..v.." NON-BREAK ("..table.concat(tblPath, "\\")..")")
 		elseif v~='nodes' then
       -- we do not want to step into the 'sets' category by itself
       settings = settings.nodes[v]
     elseif v=='nodes' then
       assert(false, "UH OH, SOMEONE TOLD US TO STEP INTO THE 'nodes' CATEGORY, THEY'RE A BAD MAN.")
     end
-		
-    print("DEBUG: BuildSettings -- settings=self.Categories."..v.."==nil; BREAK ("..table.concat(tblPath, "\\")..")")
+    --print("DEBUG: BuildSettings -- settings=self.Categories."..v.."==nil; BREAK ("..table.concat(tblPath, "\\")..")")
 	end
-  print("DEBUG: Dumping contents of 'settings'.")
-  PrintTable(settings)
+  --print("DEBUG: Dumping contents of 'settings'.")
+  --PrintTable(settings)
 	
-	for k,v in pairs(settings) do
-    if k~='nodes' then
-      if self.Controls[k]~=nil then
-        print("DEBUG: BuildSettings -- reassigned parent of existing element: '"..k.."'")
-        self.Controls[k]:SetParent(self.Layout)
+	for k,v in pairs(settings.items) do
+    if self.Controls[v]~=nil then
+      --print("DEBUG: BuildSettings -- reassigned parent of existing element: '"..k.."'")
+      self.Controls[v]:SetParent(self.Layout)
+    else
+      local item = evolve.settings[v]
+      --print("DEBUG: BuildSettings -- created new element stub: '"..k.."'")
+      local step = vgui.Create( "DPanel", self.Layout )
+      step:SetWide( self.Layout:GetWide()-20 )
+      step:SetTall(32)
+      
+      local temp = {}
+      if item.stype == 'limit' then
+        temp = self:CreateLimit( step, v, item )
+      elseif item.stype == 'string' then
+        temp = self:CreateString( step, v, item )
+      elseif item.stype == 'bool' then
+        print("CREATING A BOOL, HOO BABY!")
+        PrintTable(item)
+        temp = self:CreateBool( step, v, item )
       else
-        print("DEBUG: BuildSettings -- created new element stub: '"..k.."'")
-        local step = vgui.Create( "DPanel", self.Layout )
-        step:SetWide( self.Layout:GetWide() )
-        step:SetTall(32)
-        
-        if v.stype == 'limit' then
-          self.Controls[k] = self:CreateLimit( step, k, v )
-        elseif v.stype == 'string' then
-          self.Controls[k] = self:CreateString( step, k, v )
-        elseif v.stype == 'bool' then
-          self.Controls[k] = self:CreateBool( step, k, v )
-        else
-          print("IGNORED ELEMENT OF TYPE '"..v.stype.."', REMOVING STUB")
-          step:Remove()
-        end
-        print("DEBUG: BuildSettings -- finalized element: '"..k.."'")
+        -- the element wasn't what we wanted, so trash it
+        step:Remove()
       end
+      
+      if !temp then
+        -- Create* returned nothing so we should trash this
+        step:Remove()
+      else
+        -- everything was fine so let's keep at it
+        self.Controls[v] = temp
+      end
+      --print("DEBUG: BuildSettings -- finalized element: '"..k.."'")
     end
 	end
 end
@@ -409,7 +487,7 @@ function TAB:Initialize( pnl )
   self.SearchBox:DockMargin( 4, 2, 4, 2 )
   self.SearchBox:SetTooltip( "Press enter to search settings." )
   self.SearchBox.OnEnter = function( self )
-    print( 'SETTINGS SEARCH: '..self:GetValue() )	-- print the form's text as server text
+    --print( 'SETTINGS SEARCH: '..self:GetValue() )	-- print the form's text as server text
   end
   self:SetFocusCallbacks( self.SearchBox )
 
@@ -441,7 +519,7 @@ function TAB:Initialize( pnl )
 	self.Layout = vgui.Create( "DIconLayout", self.Scroll )
   --self.Layout:SetSize( self.Scroll:GetSize() )
 	self.Layout:SetTall(self.Scroll:GetTall())
-	self.Layout:SetWide(self.Scroll:GetWide()-18)
+	self.Layout:SetWide(self.Scroll:GetWide()-20)
 	--self.Layout:SetPos(0, 0)
 	self.Layout:SetSpaceX(0)
 	self.Layout:SetSpaceY(5)
@@ -451,8 +529,8 @@ function TAB:Initialize( pnl )
   self.GraveYard:SetSize( 0, 0 ) 
   self.GraveYard:SetPos(-1000, -1000)
   
-  self:BuildCategories( self.SettingsTree, self.Categories, evolve.settings )
-  self:OpenToPath( {"General", "Misc"} )
+  self:BuildCategories( self.SettingsTree, evolve.settingsStructure )
+  self:OpenToPath( {"Plugins", "Sandbox"} )
 end
 
 evolve:RegisterTab( TAB )
