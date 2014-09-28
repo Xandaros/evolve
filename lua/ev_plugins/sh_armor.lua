@@ -11,15 +11,15 @@ PLUGIN.Usage = "[players] [armor]"
 PLUGIN.Privileges = { "Armor" }
 PLUGIN.Icon = 'shield'
 PLUGIN.Settings = {
-  max_armor = {
-      label = 'Max Armor',
-      desc = 'Source Engine overflow Prevention',
-      stype = 'limit',
-      value = 100,
-      min = 100,
-      max = 255,
-      default = 150
-  },
+	max_armor = {
+			label = 'Max Armor',
+			desc = 'Source Engine overflow Prevention',
+			stype = 'limit',
+			value = 100,
+			min = 100,
+			max = 255,
+			default = 150
+	},
 }
 
 function PLUGIN:Call( ply, args )
