@@ -1202,7 +1202,80 @@ end
 	allow for user-specific settings
 	LOCK THIS WAY DOWN
 ]]
-if CLIENT then
+function evolve:GetSetting( name, default )
+	if evolve.settings[name] == nil then 
+		return default
+	elseif evolve.settings[name].value == nil then
+		-- in the incredibly unlikely chance that we access and the value is nil
+		return evolve.settings[name].default
+	else
+		return evolve.settings[name].value
+	end
+end
+
+function evolve:SendSettings( ply )
+	if CLIENT and !LocalPlayer():EV_HasPrivilege( "Settings: Send To Server" ) then return false end
+	net.Start("EV_Settings")
+	net.WriteString("save")
+	net.WriteTable(evolve.settings)
+	if CLIENT then
+		net.SendToServer()
+	elseif SERVER and ply then
+		net.Send(ply)
+	elseif SERVER then
+		net.Broadcast()
+	end
+	return true
+end
+
+if SERVER then
+	function evolve:LoadSettings()
+		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
+			evolve.settings = von.deserialize( file.Read( "ev_settings.txt", "DATA" ) )
+		end
+		
+		--x@TODO: do some validaiton here I guess, we would use SetSetting but you know
+		for k,v in pairs(evolve.settings) do
+			if ConVarExists(k) and GetConVarString(k)~=tostring(v.value) then
+				RunConsoleCommand("ev", "convar", k, v.value)
+			end
+		end
+	end
+	function evolve:SaveSettings()
+		-- will probably have a client version at some point
+		file.Write( "ev_settings.txt", von.serialize( evolve.settings ) )
+	end
+	
+	net.Receive( "EV_Settings", function( length, ply )		
+		-- on = sending, off = requesting
+		local doit = net.ReadString()
+		print("GOT NETWORK MESSAGE: "..doit.." len="..length.."bits")
+		if ( IsValid( ply ) and ply:IsPlayer() ) then
+			if doit == "save" then
+				if ply:EV_HasPrivilege( "Settings: Send To Server" ) then
+					local sets = net.ReadTable()
+					--x@TODO: do a step-by-step validation of the settings instead of global overwrite
+					evolve.settings = sets
+					evolve:SaveSettings()
+					-- tell our clients that our settings changed
+					evolve:SendSettings()
+				else
+					-- we don't care what the player has to say, dump the rest of their message
+					-- this should normally never happen but in the case of hacks, anything is possible
+					net.ReadUInt(length-32) --x@TODO: assumes strings are 4 bytes, ergo 32 bits
+				end
+			elseif doit == "send" then
+				evolve:SendSettings(ply)
+			end
+		end
+	end )
+elseif CLIENT then
+	function evolve:GetSettings()
+		net.Start("EV_Settings")
+		net.WriteString("send") -- request from server
+		net.SendToServer()
+	end
+	
 	function evolve:SetSetting( name, value )
 		-- elm, name, item, value
 		local ply = LocalPlayer()
@@ -1230,83 +1303,6 @@ if CLIENT then
 		else
 			evolve:Notify( ply, evolve.colors.red, "You can't modify these settings." )
 		end
-	end
-end
-function evolve:GetSetting( name, default )
-	if evolve.settings[name] == nil then 
-		return default
-	elseif evolve.settings[name].value == nil then
-		-- in the incredibly unlikely chance that we access and the value is nil
-		return evolve.settings[name].default
-	else
-		return evolve.settings[name].value
-	end
-end
-
-function evolve:SendSettings( ply )
-	if CLIENT and !LocalPlayer():EV_HasPrivilege( "Settings: Send To Server" ) then return false end
-	net.Start("EV_Settings")
-	net.WriteString("save")
-	net.WriteTable(evolve.settings)
-	if CLIENT then
-		net.SendToServer()
-	elseif SERVER and ply then
-		net.Send(ply)
-	elseif SERVER then
-		net.Broadcast()
-	end
-	return true
-end
-	
-function evolve:SaveSettings()
-	-- will probably have a client version at some point
-	file.Write( "ev_settings.txt", von.serialize( evolve.settings ) )
-end
-
-if SERVER then
-	function evolve:LoadSettings()
-		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
-			evolve.settings = von.deserialize( file.Read( "ev_settings.txt", "DATA" ) )
-		end
-		
-		--x@TODO: do some validaiton here I guess, we would use SetSetting but you know
-		for k,v in pairs(evolve.settings) do
-			if ConVarExists(k) then
-				--x@TODO: Don't load setting if convar already set to that value.
-				RunConsoleCommand("ev", "convar", k, v.value)
-			else
-			end
-		end
-	end
-	
-	net.Receive( "EV_Settings", function( length, ply )		
-		-- on = sending, off = requesting
-		local doit = net.ReadString()
-		print("GOT NETWORK MESSAGE: "..doit)
-		if ( IsValid( ply ) and ply:IsPlayer() ) then
-			if doit == "save" then
-				if ply:EV_HasPrivilege( "Settings: Send To Server" ) then
-					local sets = net.ReadTable()
-					--x@TODO: do a step-by-step validation of the settings instead of global overwrite
-					evolve.settings = sets
-					evolve:SaveSettings()
-					-- tell our clients that our settings changed
-					evolve:SendSettings()
-				else
-					-- we don't care what the player has to say, dump the rest of their message
-					-- this should normally never happen but in the case of hacks, anything is possible
-					net.ReadUInt(length-32) --x@TODO: assumes strings are 4 bytes, ergo 32 bits
-				end
-			elseif doit == "send" then
-				evolve:SendSettings(ply)
-			end
-		end
-	end )
-elseif CLIENT then
-	function evolve:GetSettings()
-		net.Start("EV_Settings")
-		net.WriteString("send") -- request from server
-		net.SendToServer()
 	end
 	
 	net.Receive( "EV_Settings", function( length )
