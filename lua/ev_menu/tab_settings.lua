@@ -41,6 +41,8 @@ TAB.Scroll = nil
 TAB.Layout = nil
 TAB.GraveYard = nil
 
+TAB.CurrentTree = {"Plugins", "Sandbox"}
+
 
 TAB.Controls = {}
 --[[
@@ -368,6 +370,7 @@ function TAB:BuildCategories( atree, aset, adepth )
 						end
 						work = work:GetParentNode()
 					end
+					parent.CurrentTree = dpath
 					parent:BuildSettings( dpath )
 				end
 				
@@ -394,6 +397,8 @@ function TAB:BuildSettings( tblPath )
 			if v:GetParent() == self.Layout then
 				--print("DEBUG: BuildSettings -- existing control '"..k.."' moved to grave.")
 				v:SetParent(self.GraveYard)
+				v:Remove()
+				v=nil
 			elseif v:GetParent() == self.GraveYard then
 				--print("DEBUG: BuildSettings -- control '"..k.."' was already in the grave.")
 			else
@@ -424,39 +429,35 @@ function TAB:BuildSettings( tblPath )
 	--PrintTable(settings)
 	
 	for k,v in pairs(settings.items) do
-		if self.Controls[v]~=nil then
-			--print("DEBUG: BuildSettings -- reassigned parent of existing element: '"..k.."'")
-			self.Controls[v]:SetParent(self.Layout)
+		--x@TODO: We might want to make sure that this isn't infinitely orphaning children elsewhere.
+		local item = evolve.settings[v]
+		--print("DEBUG: BuildSettings -- created new element stub: '"..k.."'")
+		local step = vgui.Create( "DPanel", self.Layout )
+		step:SetWide( self.Layout:GetWide()-20 )
+		step:SetTall(32)
+		
+		local temp = {}
+		if item.stype == 'limit' then
+			temp = self:CreateLimit( step, v, item )
+		elseif item.stype == 'string' then
+			temp = self:CreateString( step, v, item )
+		elseif item.stype == 'bool' then
+			print("CREATING A BOOL, HOO BABY!")
+			PrintTable(item)
+			temp = self:CreateBool( step, v, item )
 		else
-			local item = evolve.settings[v]
-			--print("DEBUG: BuildSettings -- created new element stub: '"..k.."'")
-			local step = vgui.Create( "DPanel", self.Layout )
-			step:SetWide( self.Layout:GetWide()-20 )
-			step:SetTall(32)
-			
-			local temp = {}
-			if item.stype == 'limit' then
-				temp = self:CreateLimit( step, v, item )
-			elseif item.stype == 'string' then
-				temp = self:CreateString( step, v, item )
-			elseif item.stype == 'bool' then
-				print("CREATING A BOOL, HOO BABY!")
-				PrintTable(item)
-				temp = self:CreateBool( step, v, item )
-			else
-				-- the element wasn't what we wanted, so trash it
-				step:Remove()
-			end
-			
-			if !temp then
-				-- Create* returned nothing so we should trash this
-				step:Remove()
-			else
-				-- everything was fine so let's keep at it
-				self.Controls[v] = temp
-			end
-			--print("DEBUG: BuildSettings -- finalized element: '"..k.."'")
+			-- the element wasn't what we wanted, so trash it
+			step:Remove()
 		end
+		
+		if !temp then
+			-- Create* returned nothing so we should trash this
+			step:Remove()
+		else
+			-- everything was fine so let's keep at it
+			self.Controls[v] = temp
+		end
+		--print("DEBUG: BuildSettings -- finalized element: '"..k.."'")
 	end
 end
 
@@ -540,7 +541,10 @@ function TAB:Initialize( pnl )
 	self.GraveYard:SetPos(-1000, -1000)
 	
 	self:BuildCategories( self.SettingsTree, evolve.settingsStructure )
-	self:OpenToPath( {"Plugins", "Sandbox"} )
+end
+
+function TAB:Update()
+	self:OpenToPath( self.CurrentTree )
 end
 
 evolve:RegisterTab( TAB )
