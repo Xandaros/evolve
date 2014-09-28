@@ -4,14 +4,17 @@
 
 --[[
   @TODO: settings in general
-  * Put the console var handling general code into SetSetting?
-  * Implement setting domains (server/client/shared -- do domain checks so that one user can't overwrite the settings of another with higher privs)
-  * Bind settings to permissions.
-  * Implement string validators.
-  * Search feature by building a list of "searchable" text that references the tree node, will require buildcategories to make each setting and put it in the grave.
-  * 
+  x Implement setting domains (server/client/shared -- do domain checks so that one user can't overwrite the settings of another with higher privs)
+  x Bind settings to permissions.
+  x Implement string validators.
+  x Search feature by building a list of "searchable" text that references the tree node, will require buildcategories to make each setting and put it in the grave.
+  x Better behavior for handling pre-existing settings when registering plugins. Delay the initial request for settings?
+  x Either make evolve:SaveSettings() only available to the server or let the client have access to von so they can save a copy as well.
+  x Make a server version of evolve:SetSetting()
+  x Provide a TAB:Update() method that can rebuild the current view
   @TODO: framework overhaul
-  * make the menu have more methods to call on registered TABs, Open, Close, Hide
+  * make autocomplete wrap spaces around a name with spaces in it
+  * make FindPlayers match registered users that are offline
 ]]
 
 local TAB = {}
@@ -499,8 +502,8 @@ function TAB:Initialize( pnl )
   self.SearchButton:SetImage( "icon16/find.png" )
   self.SearchButton:SetText( "" )
   self.SearchButton:SetTooltip( "Press to search settings." )
-  self.SearchButton.DoClick = function(self) 
-    self:GetParent().SearchBox:OnEnter()
+  self.SearchButton.DoClick = function() 
+    self.SearchBox:OnEnter()
   end
 
   self.SettingsTree = vgui.Create( "DTree", self.SearchPanel )
