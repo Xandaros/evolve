@@ -1262,7 +1262,7 @@ if SERVER then
 				else
 					-- we don't care what the player has to say, dump the rest of their message
 					-- this should normally never happen but in the case of hacks, anything is possible
-					net.ReadUInt(length-32) --x@TODO: assumes strings are 4 bytes, ergo 32 bits
+					net.ReadUInt(length-(8+string.len(doit)*8)) --8bits for every ASCII char.
 				end
 			elseif doit == "send" then
 				evolve:SendSettings(ply)

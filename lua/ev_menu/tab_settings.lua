@@ -41,7 +41,7 @@ TAB.Scroll = nil
 TAB.Layout = nil
 TAB.GraveYard = nil
 
-TAB.CurrentTree = {"Plugins", "Sandbox"}
+TAB.CurrentTree = {"General", "Misc"}
 
 
 TAB.Controls = {}
@@ -63,6 +63,14 @@ local testsettings = {
 				stype = 'category',
 				icon = 'rainbow',
 				value = {
+					a_color = {
+						label = 'A Color',
+						desc = '5/8ths of my friends have a form of color blindness.',
+						stype = 'color',
+						alpha = false,
+						value = Color( 0, 110, 160, 255 ),
+						default = Color( 0, 110, 160, 255 ),
+					},
 					num_corns = {
 						label = 'No. Corns',
 						desc = 'How many corns? This many.',
@@ -137,7 +145,7 @@ local testsettings = {
 		},
 	},
 }
-for i=1,16 do
+--[[for i=1,16 do
 	local set = {
 		label = 'Test Setting #'..i,
 		desc = 'Testing out item '..i..', huh?',
@@ -147,12 +155,89 @@ for i=1,16 do
 	}
 	
 	testsettings.category_general.value.category_misc.value["test_set"..i]=set
-end
+end]]
 
 evolve:RegisterSettings( testsettings )
 
 function TAB:IsAllowed()
 	return LocalPlayer():EV_HasPrivilege( "Settings" )
+end
+
+function TAB:CreateColor( pnl, name, item )
+	if item.isconvar and !ConVarExists( name ) then
+		return false
+	end
+	
+	-- this control is special because we need a method to collapse it back to its original state
+	local helm = vgui.Create( "DButton", pnl )
+	helm:SetText( item.label )
+	helm:SetTooltip( item.desc )
+	helm:SetSize( 135, 32 )
+	helm:SetDark(true)
+	helm:Dock( LEFT )
+	pnl.Label = helm
+	
+	local parent = self
+	function pnl:makeColorMixer()
+		self.expandStatus = true
+		if self.ColorButton ~= nil then
+			self.ColorButton:Remove()
+			self.ColorButton = nil
+		end
+		self.Label.DoClick = function() pnl:makeColorButton(self) end
+		local elm = vgui.Create( "DColorMixer", self )
+		local size = 92
+		if !item.alpha then
+			size = 68
+		end
+		self:SetTall( size )
+		elm:SetSize( 193, size )
+		-- 68 tall = just enough for RGB wangs
+		-- 92 tall = big enough for RGBA wangs
+		
+		elm:Dock( RIGHT )			--Make Mixer fill place of Frame
+		elm:SetPalette( false )  		--Show/hide the palette			DEF:true
+		elm:SetAlphaBar( item.alpha ) 		--Show/hide the alpha bar		DEF:true
+		elm:SetWangs( true )	 		--Show/hide the R G B A indicators 	DEF:true
+		elm:SetColor( evolve:GetSetting(name) )	--Set the default color]]
+		-- we're gonna need some way of telling when the player is done with this
+		elm.ValueChanged = function(self, color)
+			evolve:SetSetting(name, color)
+		end
+		
+		self.ColorMixer = elm
+		parent.Layout:SetSize(parent.Scroll:GetSize())
+	end
+	
+	function pnl:makeColorButton()
+		self.expandStatus = false
+		if self.ColorMixer ~= nil then
+			self.ColorMixer:Remove()
+			self.ColorMixer = nil
+		end
+		self.Label.DoClick = function() pnl:makeColorMixer(self) end
+		local elm = vgui.Create( "DColorButton", self )
+		self:SetTall( 32 )
+		elm:SetSize( 193, 32 )
+		local clr = evolve:GetSetting(name)
+		elm:SetText("Color( "..clr.r..", "..clr.g..", "..clr.b..", "..clr.a.." )")
+		-- we can't set the tooltip because the button auto-updates the tooltip \o/
+		--elm:SetTooltip( item.desc )
+		elm:SetColor( clr )
+		elm:Dock( LEFT )
+		elm.DoClick = function() pnl:makeColorMixer(self) end
+		self.ColorButton = elm
+		parent.Layout:SetSize(parent.Scroll:GetSize())
+	end
+	
+	-- this is so we have the ability to re-open to either state, although this won't work at present
+	if pnl.expandStatus then
+		pnl:makeColorMixer()
+	else
+		pnl:makeColorButton()
+	end
+	
+	return pnl
 end
 
 -- functions used by buildsettings
@@ -442,9 +527,9 @@ function TAB:BuildSettings( tblPath )
 		elseif item.stype == 'string' then
 			temp = self:CreateString( step, v, item )
 		elseif item.stype == 'bool' then
-			print("CREATING A BOOL, HOO BABY!")
-			PrintTable(item)
 			temp = self:CreateBool( step, v, item )
+		elseif item.stype == 'color' then
+			temp = self:CreateColor( step, v, item )
 		else
 			-- the element wasn't what we wanted, so trash it
 			step:Remove()
