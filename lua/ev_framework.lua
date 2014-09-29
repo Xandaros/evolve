@@ -44,6 +44,7 @@ evolve.settingsStructure = {
 	}
 }
 evolve.settings = {}
+evolve.settingsdelta = {}
 evolve.version = 179
 _R = debug.getregistry()
 
@@ -1214,12 +1215,14 @@ function evolve:GetSetting( name, default )
 end
 
 function evolve:SendSettings( ply )
-	if CLIENT and !LocalPlayer():EV_HasPrivilege( "Settings: Send To Server" ) then return false end
+	if CLIENT and !LocalPlayer():EV_HasPrivilege( "Settings: Send To Server" ) then
+		return false
+	end
 	net.Start("EV_Settings")
 	net.WriteString("save")
 	local loaded = {}
-	for k,v in pairs(evolve.settings) do
-		loaded[k] = v.value
+	for k,v in pairs(evolve.settingsdelta) do
+		loaded[k] = v
 	end
 	net.WriteTable(loaded)
 	if CLIENT then
@@ -1229,6 +1232,7 @@ function evolve:SendSettings( ply )
 	elseif SERVER then
 		net.Broadcast()
 	end
+	evolve.settingsdelta={}
 	return true
 end
 
@@ -1262,15 +1266,15 @@ if SERVER then
 		file.Write( "ev_settings.txt", von.serialize(loaded) )
 	end
 	
-	net.Receive( "EV_Settings", function( length, ply )		
+	net.Receive( "EV_Settings", function( length, ply )
 		-- on = sending, off = requesting
 		local doit = net.ReadString()
 		print("GOT NETWORK MESSAGE: "..doit.." len="..length.."bits")
 		if ( IsValid( ply ) and ply:IsPlayer() ) then
 			if doit == "save" then
 				if ply:EV_HasPrivilege( "Settings: Send To Server" ) then
-					local loaded = net.ReadTable()
-					for k,v in pairs(loaded) do
+					table.Merge(evolve.settingsdelta, net.ReadTable())
+					for k,v in pairs(evolve.settingsdelta) do
 						evolve.settings[k].value = v
 					end
 					--x@TODO: do a step-by-step validation of the settings instead of global overwrite
@@ -1316,6 +1320,7 @@ elseif CLIENT then
 			end
 			
 			evolve.settings[name].value = value
+			evolve.settingsdelta[name] = value
 			--x@TODO: make auto-send-on-set an option of its own
 			evolve:SendSettings()
 		else
