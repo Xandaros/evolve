@@ -1217,7 +1217,11 @@ function evolve:SendSettings( ply )
 	if CLIENT and !LocalPlayer():EV_HasPrivilege( "Settings: Send To Server" ) then return false end
 	net.Start("EV_Settings")
 	net.WriteString("save")
-	net.WriteTable(evolve.settings)
+	local loaded = {}
+	for k,v in pairs(evolve.settings) do
+		loaded[k] = v.value
+	end
+	net.WriteTable(loaded)
 	if CLIENT then
 		net.SendToServer()
 	elseif SERVER and ply then
@@ -1229,21 +1233,33 @@ function evolve:SendSettings( ply )
 end
 
 if SERVER then
+	function evolve:ClearSettings()
+		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
+			file.Delete( "ev_settings.txt", "DATA" )
+		end
+		--@TODO: Maybe make this rebuild evolve.settings? Not sure if we'd need that.
+	end
+	
 	function evolve:LoadSettings()
 		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
-			evolve.settings = von.deserialize( file.Read( "ev_settings.txt", "DATA" ) )
-		end
-		
-		--x@TODO: do some validaiton here I guess, we would use SetSetting but you know
-		for k,v in pairs(evolve.settings) do
-			if ConVarExists(k) and GetConVarString(k)~=tostring(v.value) then
-				RunConsoleCommand("ev", "convar", k, v.value)
+			local loaded = von.deserialize( file.Read( "ev_settings.txt", "DATA" ) )
+			for k,v in pairs(loaded) do
+				--x@TODO: do some validaiton here I guess, we would use SetSetting but you know
+				if evolve.settings[k]==nil then evolve.settings[k]={} end
+				evolve.settings[k].value = v 
+				if ConVarExists(k) and GetConVarString(k)~=tostring(v) then
+					RunConsoleCommand("ev", "convar", k, v)
+				end
 			end
 		end
 	end
 	function evolve:SaveSettings()
 		-- will probably have a client version at some point
-		file.Write( "ev_settings.txt", von.serialize( evolve.settings ) )
+		local loaded = {}
+		for k,v in pairs(evolve.settings) do
+			loaded[k] = v.value
+		end
+		file.Write( "ev_settings.txt", von.serialize(loaded) )
 	end
 	
 	net.Receive( "EV_Settings", function( length, ply )		
@@ -1253,9 +1269,11 @@ if SERVER then
 		if ( IsValid( ply ) and ply:IsPlayer() ) then
 			if doit == "save" then
 				if ply:EV_HasPrivilege( "Settings: Send To Server" ) then
-					local sets = net.ReadTable()
+					local loaded = net.ReadTable()
+					for k,v in pairs(loaded) do
+						evolve.settings[k].value = v
+					end
 					--x@TODO: do a step-by-step validation of the settings instead of global overwrite
-					evolve.settings = sets
 					evolve:SaveSettings()
 					-- tell our clients that our settings changed
 					evolve:SendSettings()
@@ -1309,7 +1327,11 @@ elseif CLIENT then
 		-- on = sending, off = requesting
 		local doit = net.ReadString()
 		if doit == "save" then
-			evolve.settings = net.ReadTable()
+			local loaded = net.ReadTable()
+			for k,v in pairs(loaded) do
+				if evolve.settings[k]==nil then evolve.settings[k]={} end
+				evolve.settings[k].value = v
+			end
 		elseif doit == "send" then
 			evolve:SendSettings()
 		end
@@ -1320,8 +1342,12 @@ function evolve:RecurseRegister( mergepoint, settings )
 		if v.stype == "category" then
 			evolve:RecurseRegister( evolve.settings, v.value )
 		else
-			if mergepoint[k] == nil then
+			for k2,v2 in pairs(v) do
+				local prevalue = v.value
 				mergepoint[k] = v
+				if prevalue~=nil then
+					mergepoint[k].value = prevalue
+				end
 			end
 		end
 	end
@@ -1345,8 +1371,13 @@ function evolve:RegisterPluginSettings( plugin )
 		value = value
 	}
 	for k,v in pairs( del['category_'..string.lower(label)].value ) do
-		if evolve.settings[k] == nil then
-			evolve.settings[k] = v
+		local prevalue = nil
+		if evolve.settings[k]~=nil then
+			prevalue = evolve.settings[k].value
+		end
+		evolve.settings[k] = v
+		if prevalue~=nil then
+			evolve.settings[k].value = prevalue
 		end
 	end
 end
