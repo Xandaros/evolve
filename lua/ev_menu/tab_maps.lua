@@ -3,7 +3,7 @@ TAB.Title = "Maps"
 TAB.Description = "Change Map."
 TAB.Author = "Divran"
 TAB.Width = 520
-TAB.Icon = "world"
+TAB.Icon = "map"
 
 function TAB:Update() end
 

@@ -68,47 +68,41 @@ local testsettings = {
 						desc = '5/8ths of my friends have a form of color blindness.',
 						stype = 'color',
 						alpha = false,
-						value = Color( 0, 110, 160, 255 ),
 						default = Color( 0, 110, 160, 255 ),
 					},
 					num_corns = {
 						label = 'No. Corns',
 						desc = 'How many corns? This many.',
 						stype = 'limit',
-						value = 50,
 						min = 25,
 						max = 75,
-						default = 30
+						default = 50,
 					},
 					num_horns = {
 						label = 'No. Horns',
 						desc = 'Remember, we are on a budget.',
 						stype = 'limit',
-						value = 1,
 						min = -3,
 						max = 30,
-						default = 2
+						default = 1,
 					},
 					resync_name = {
 						label = 'Sync Again Label',
 						desc = 'Can you not decide what to call it?',
 						stype = 'string',
-						value = 'reSync',
-						default = 'ReSync'
+						default = 'reSync',
 					},
 					best_name = {
 						label = 'Best Name',
 						desc = 'Who is the best?',
 						stype = 'string',
-						value = 'Bungalo',
-						default = 'EntranceJew'
+						default = 'Bungalo',
 					},
 					is_great = {
 						label = 'Is Great',
 						desc = 'Are you having trouble finding out?',
 						stype = 'bool',
-						value = true,
-						default = false
+						default = true,
 					},
 				},
 			},
@@ -122,23 +116,7 @@ local testsettings = {
 						label = 'Overload server.cfg',
 						desc = 'If enabled, this will the LoadSettings to execute after server.cfg -- overwriting any values defined there.',
 						stype = 'bool',
-						value = true,
-						default = false
-					},
-				},
-			},
-			category_hud = {
-				label = 'HUD',
-				desc = "Specially modify how your HUD controls.",
-				stype = 'category',
-				icon = 'overlays',
-				value = {
-					hud_noises = {
-						label = 'HUD Sounds',
-						desc = 'If enabled, this will play beepy noises when your hud monitors get dangerously low.',
-						stype = 'bool',
-						value = true,
-						default = true
+						default = true,
 					},
 				},
 			},
@@ -337,7 +315,6 @@ function TAB:CreateBool( pnl, name, item )
 			label = "Keep NPC bodies",
 			desc = "Toggle.",
 			stype = "bool",
-			value = 0,
 			default = 0,
 			multiplier = 8,
 			isconvar = true,

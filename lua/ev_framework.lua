@@ -1352,6 +1352,8 @@ function evolve:RecurseRegister( mergepoint, settings )
 				mergepoint[k] = v
 				if prevalue~=nil then
 					mergepoint[k].value = prevalue
+				else
+					mergepoint[k].value = mergepoint[k].default
 				end
 			end
 		end
@@ -1383,6 +1385,8 @@ function evolve:RegisterPluginSettings( plugin )
 		evolve.settings[k] = v
 		if prevalue~=nil then
 			evolve.settings[k].value = prevalue
+		else
+			evolve.settings[k].value = evolve.settings[k].default
 		end
 	end
 end
