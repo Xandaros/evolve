@@ -27,7 +27,6 @@ function PLUGIN:CCommand( ply, com, cargs )
 	
 	for _, plugin in ipairs( evolve.plugins ) do
 		if ( plugin.ChatCommand == command or ( type( plugin.ChatCommand ) == "table" and table.HasValue( plugin.ChatCommand, command ) ) ) then
-			evolve.SilentNotify = string.Left( com, 1 ) == "@"
 			res, ret = pcall( plugin.Call, plugin, ply, args, string.sub( com, #command + 3 ), command )
 			evolve.SilentNotify = false
 
