@@ -4,7 +4,16 @@ Introduction
 First of all, I'd like to say a big thank you to Overv. He created evolve and supported it until the update to gmod 13 broke it completely.
 He really did an incredible job to provide us this awesome mod and it is a honor to be allowed to continue it.
 
-To install evolve, simply clone it into your addons directory and you are ready to go.
+How do I install evolve?
+========================
+
+To install evolve, you can either download it as a zip or use git.
+
+If you use git, simply clone it using `git clone --recursive git@github.com:Xandaros/evolve.git` and you're good to go.  
+If you later want to update it, you can use `git pull` to update evolve and `git submodule update` to update the submodules, which are required to run evolve.
+
+To install evolve with a zip file, first download the [evolve zip file](https://github.com/Xandaros/evolve/archive/master.zip) and unzip it into your addons folder. Make sure the folder in your addons directory contains a file called "README.md".  
+Then, download the [vON zip file](https://github.com/vercas/vON/archive/master.zip) and unzip it into addons/evolve/includes/ev_von. Make sure that the ev_von folder contains a file called "von.lua".
 
 How do I become owner?
 ======================
