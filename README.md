@@ -63,3 +63,9 @@ The original author of evolve is Overv, with a lot of help of Divran
 Evolve uses Vercas' Object Notation made by Vercas. (See: http://www.facepunch.com/showthread.php?t=1194008)
 
 The playername boxes were originally made by ColtoM.
+
+Troubleshooting
+===============
+
+Problem: `Hook 'PlayerSpawn' in plugin 'Player Info' failed with error` or similar. Evolve not working at all.  
+Solution: You most likely didn't install vON correctly. Make sure you have a file "von.lua" in `addons/evolve/lua/includes/ev_von/`. If not, see the installation tutorial above and read it carefully.
