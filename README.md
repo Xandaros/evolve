@@ -13,7 +13,7 @@ If you use git, simply clone it using `git clone --recursive git@github.com:Xand
 If you later want to update it, you can use `git pull` to update evolve and `git submodule update` to update the submodules, which are required to run evolve.
 
 To install evolve with a zip file, first download the [evolve zip file](https://github.com/Xandaros/evolve/archive/master.zip) and unzip it into your addons folder. Make sure the folder in your addons directory contains a file called "README.md".  
-Then, download the [vON zip file](https://github.com/vercas/vON/archive/master.zip) and unzip it into addons/evolve/includes/ev_von. Make sure that the ev_von folder contains a file called "von.lua".
+Then, download the [vON zip file](https://github.com/vercas/vON/archive/master.zip) and unzip the "von.lua" it into addons/evolve/includes/ev_von. Make sure that the ev_von folder contains a file called "von.lua".
 
 How do I become owner?
 ======================
