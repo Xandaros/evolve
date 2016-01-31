@@ -1245,15 +1245,15 @@ end
 
 if SERVER then
 	function evolve:ClearSettings()
-		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
-			file.Delete( "ev_settings.txt", "DATA" )
+		if ( file.Exists( "evolve/settings.txt", "DATA" ) ) then
+			file.Delete( "evolve/settings.txt", "DATA" )
 		end
 		--@TODO: Maybe make this rebuild evolve.settings? Not sure if we'd need that.
 	end
 	
 	function evolve:LoadSettings()
-		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
-			local loaded = von.deserialize( file.Read( "ev_settings.txt", "DATA" ) )
+		if ( file.Exists( "evolve/settings.txt", "DATA" ) ) then
+			local loaded = evolve.von.deserialize( file.Read( "evolve/settings.txt", "DATA" ) )
 			for k,v in pairs(loaded) do
 				--x@TODO: do some validaiton here I guess, we would use SetSetting but you know
 				if evolve.settings[k]==nil then evolve.settings[k]={} end
@@ -1270,7 +1270,7 @@ if SERVER then
 		for k,v in pairs(evolve.settings) do
 			loaded[k] = v.value
 		end
-		file.Write( "ev_settings.txt", von.serialize(loaded) )
+		file.Write( "evolve/settings.txt", evolve.von.serialize(loaded) )
 	end
 	
 	net.Receive( "EV_Settings", function( length, ply )

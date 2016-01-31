@@ -188,8 +188,8 @@ function PLUGIN:Initialize()
 	table.Add( evolve.privileges, tools )
 
 	--this table is kept so when new entities/tools are added they get added to every rank
-	if ( file.Exists( "ev_allentitiescache.txt", "DATA" ) ) then
-		evolve.allentities = von.deserialize(file.Read( "ev_allentitiescache.txt", "DATA" ))
+	if ( file.Exists( "evolve/allentitiescache.txt", "DATA" ) ) then
+		evolve.allentities = evolve.von.deserialize(file.Read( "evolve/allentitiescache.txt", "DATA" ))
 	else
 		evolve.allentities = {}
 	end
@@ -219,7 +219,7 @@ function PLUGIN:Initialize()
 		end
 	end
 
-	file.Write( "ev_allentitiescache.txt",  von.serialize(evolve.allentities))
+	file.Write( "evolve/allentitiescache.txt", evolve.von.serialize(evolve.allentities))
 
 	evolve:SaveRanks()
 end

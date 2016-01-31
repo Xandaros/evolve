@@ -7,15 +7,15 @@ PLUGIN.Usage = "[add;remove;list;toggle][advert id][r][g][b][interval][message]"
 PLUGIN.Privileges = { "Advert 3" }
 
 if (SERVER) then
-	local adFileName= "ev_adverts.txt"
+	local adFileName= "evolve/adverts.txt"
 	local function writeToFile(data)
-		file.Write(adFileName, von.serialize(data))
+		file.Write(adFileName, evolve.von.serialize(data))
 	end
 
 	adverts = {}
 	adverts.Stored = {}
 	if (#file.Find(adFileName,"DATA") > 0) then
-		adverts.Stored = von.deserialize(file.Read(adFileName,"DATA"))
+		adverts.Stored = evolve.von.deserialize(file.Read(adFileName,"DATA"))
 		for k,v in pairs(adverts.Stored) do
 			timer.Create("Advert_"..k, v.Time, 0, function() 
 				if (#player.GetAll() > 0) then

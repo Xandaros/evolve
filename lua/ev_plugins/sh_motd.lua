@@ -1,4 +1,4 @@
--- Remember to create the ev_motd.txt in the data folder and add the contents!!
+-- Remember to create the motd.txt in the data folder and add the contents!!
 
 local PLUGIN = {}
 PLUGIN.Title = "MOTD2"
@@ -23,10 +23,10 @@ function PLUGIN:Call( ply, args )
 end
 
 function MOTDPlayerInitialSpawn( ply )
-	if (file.Exists("evolve_motd/ev_motd.txt", "DATA")) then
+	if (file.Exists("evolve/motd.txt", "DATA")) then
 		timer.Create("MOTD2TimerFor"..ply:Nick(),3,3,function() 
 		net.Start( "MOTD2Packet" )
-		local tmpstr = file.Read("evolve_motd/ev_motd.txt", "DATA")
+		local tmpstr = file.Read("evolve/motd.txt", "DATA")
 		if tmpstr then
 			net.WriteString( tmpstr )
 		else
@@ -38,7 +38,7 @@ function MOTDPlayerInitialSpawn( ply )
 		Msg("\n")
 		Msg("====================== \n")
 		Msg("Missing MOTD file! \n")
-		Msg("Make sure the file exists as: ev_motd.txt in data/evolve_motd/! \n")
+		Msg("Make sure the file exists as: motd.txt in data/evolve/! \n")
 		Msg("====================== \n")
 		Msg("\n")
 	end
@@ -55,13 +55,13 @@ function PLUGIN:OpenMotd2( ply )
 	end
 end
 if (SERVER) then 
-	if (file.Exists("evolve_motd/ev_motd.txt", "DATA")) then
+	if (file.Exists("evolve/motd.txt", "DATA")) then
 		print("Received Valid MOTD2")
 	else
 		Msg("\n")
 		Msg("====================== \n")
 		Msg("Missing MOTD file! \n")
-		Msg("Make sure the file exists as: ev_motd.txt in data/evolve_motd/! \n")
+		Msg("Make sure the file exists as: motd.txt in data/evolve/! \n")
 		Msg("====================== \n")
 		Msg("\n")
 	end

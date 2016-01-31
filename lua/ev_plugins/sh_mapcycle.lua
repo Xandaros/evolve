@@ -296,7 +296,7 @@ end
 
 function PLUGIN:Save()
         if (CLIENT) then return end
-        file.Write( "evolve/ev_mapcycle.txt", von.serialize( { self.Enabled, self.Interval, self.Maps } ) )
+        file.Write( "evolve/mapcycle.txt", evolve.von.serialize( { self.Enabled, self.Interval, self.Maps } ) )
 end
 
 ----------------------------
@@ -306,10 +306,10 @@ end
 
 function PLUGIN:Load()
         if (CLIENT) then return end
-        if (file.Exists( "evolve/ev_mapcycle.txt", "DATA")) then
-                local data = file.Read( "evolve/ev_mapcycle.txt", "DATA" )
+        if (file.Exists( "evolve/mapcycle.txt", "DATA")) then
+                local data = file.Read( "evolve/mapcycle.txt", "DATA" )
                 if (data and data != "") then
-                        data = von.deserialize( data )
+                        data = evolve.von.deserialize( data )
                         if (next(data)) then
                                 self.Enabled = data[1]
                                 self.Interval = data[2]
