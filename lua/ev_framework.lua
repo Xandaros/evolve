@@ -29,6 +29,13 @@ evolve.plugins = {}
 evolve.version = 179
 _R = debug.getregistry()
 
+--[[
+Initialisation
+--]]
+if not file.Exists( "evolve", "DATA" ) then
+	file.CreateDir( "evolve" )
+end
+
 --[[-------------------------------------------------------------------------------------------------------------------------
 Net strings
 ---------------------------------------------------------------------------------------------------------------------------]]
@@ -408,9 +415,9 @@ function _R.Entity:UniqueID() if ( !self:IsValid() ) then return 0 end end
 
 if SERVER then
 	function evolve:LoadPlayerInfo()
-		if ( file.Exists( "ev_playerinfo.txt", "DATA" ) ) then
+		if ( file.Exists( "evolve/playerinfo.txt", "DATA" ) ) then
 			debug.sethook()
-			self.PlayerInfo = von.deserialize( file.Read( "ev_playerinfo.txt", "DATA" ) )
+			self.PlayerInfo = evolve.von.deserialize( file.Read( "evolve/playerinfo.txt", "DATA" ) )
 		else
 			self.PlayerInfo = {}
 		end
@@ -418,7 +425,7 @@ if SERVER then
 	evolve:LoadPlayerInfo()
 
 	function evolve:SavePlayerInfo()
-		file.Write( "ev_playerinfo.txt", von.serialize( self.PlayerInfo ) )
+		file.Write( "evolve/playerinfo.txt", evolve.von.serialize( self.PlayerInfo ) )
 	end
 end
 
@@ -679,12 +686,12 @@ end
 if SERVER then
 
 	function evolve:SaveRanks()
-		file.Write( "ev_userranks.txt", von.serialize( evolve.ranks ) )
+		file.Write( "evolve/userranks.txt", evolve.von.serialize( evolve.ranks ) )
 	end
 
 	function evolve:LoadRanks()
-		if ( file.Exists( "ev_userranks.txt", "DATA" ) ) then
-			evolve.ranks = von.deserialize( file.Read( "ev_userranks.txt", "DATA" ) )
+		if ( file.Exists( "evolve/userranks.txt", "DATA" ) ) then
+			evolve.ranks = evolve.von.deserialize( file.Read( "evolve/userranks.txt", "DATA" ) )
 		else
 			include( "ev_defaultranks.lua" )
 			evolve:SaveRanks()
@@ -1168,12 +1175,12 @@ end
 
 if SERVER then
 	function evolve:SaveGlobalVars()
-		file.Write( "ev_globalvars.txt", von.serialize( evolve.globalvars ) )
+		file.Write( "evolve/globalvars.txt", evolve.von.serialize( evolve.globalvars ) )
 	end
 
 	function evolve:LoadGlobalVars()
-		if ( file.Exists( "ev_globalvars.txt", "DATA" ) ) then
-			evolve.globalvars = von.deserialize( file.Read( "ev_globalvars.txt", "DATA" ) )
+		if ( file.Exists( "evolve/globalvars.txt", "DATA" ) ) then
+			evolve.globalvars = evolve.von.deserialize( file.Read( "evolve/globalvars.txt", "DATA" ) )
 		else
 			evolve.globalvars = {}
 			evolve:SaveGlobalVars()
