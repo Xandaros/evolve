@@ -15,6 +15,10 @@ If you later want to update it, you can use `git pull` to update evolve and `git
 To install evolve with a zip file, first download the [evolve zip file](https://github.com/Xandaros/evolve/archive/master.zip) and unzip it into your addons folder. Make sure the folder in your addons directory contains a file called "README.md".  
 Then, download the [vON zip file](https://github.com/vercas/vON/archive/master.zip) and unzip the "von.lua" it into addons/evolve/includes/ev_von. Make sure that the ev_von folder contains a file called "von.lua".
 
+How do I upgrade from a previous evolve install?
+========================
+Check if you have ev_* files in your data or data/evolve_motd folder and move them into data/evolve folder, remove the ev_ prefix from the filenames. If data/evolve folder does not exist, create it.
+
 How do I become owner?
 ======================
 
