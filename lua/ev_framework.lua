@@ -26,6 +26,25 @@ evolve.category.punishment = 3
 evolve.category.teleportation = 4
 evolve.stagedPlugins = {}
 evolve.plugins = {}
+evolve.settingsStructure = {
+	category_general = {
+		label = 'General',
+		desc = 'This is for general evolve settings.',
+		stype = 'category',
+		icon = 'home',
+		value = {
+		}
+	},
+	category_plugins = {
+		label = 'Plugins',
+		desc = 'Your plugin settings! For You!',
+		stype = 'category',
+		icon = 'plugin',
+		value = {}
+	}
+}
+evolve.settings = {}
+evolve.settingsdelta = {}
 evolve.version = 179
 _R = debug.getregistry()
 
@@ -44,6 +63,7 @@ if SERVER then
 	util.AddNetworkString("EV_PluginFile")
 	util.AddNetworkString("EV_Privilege")
 	util.AddNetworkString("EV_Rank")
+	util.AddNetworkString("EV_Settings")
 	util.AddNetworkString("EV_RankPrivileges")
 	util.AddNetworkString("EV_RenameRank")
 	util.AddNetworkString("EV_RankPrivilege")
@@ -172,7 +192,7 @@ function evolve:FormatTime( t )
 	elseif ( t < 24 * 3600 * 30 ) then
 		if ( math.ceil( t / ( 24 * 3600 * 7 ) ) == 1 ) then return "one week" else return math.ceil( t / ( 24 * 3600 * 7 ) ) .. " weeks" end
 	else
-		if ( math.ceil( t / ( 24 * 3600 * 30 ) ) == 1 ) then return "one month" else return math.ceil( t / ( 24 * 3600 * 30 ) )  .. " months" end
+		if ( math.ceil( t / ( 24 * 3600 * 30 ) ) == 1 ) then return "one month" else return math.ceil( t / ( 24 * 3600 * 30 ) )	.. " months" end
 	end
 end
 
@@ -255,6 +275,7 @@ function evolve:RegisterPlugin( plugin )
 		table.insert( evolve.stagedPlugins, plugin )
 		plugin.File = pluginFile
 		if ( plugin.Privileges and SERVER ) then table.Add( evolve.privileges, plugin.Privileges ) table.sort( evolve.privileges ) end
+		if ( plugin.Settings ) then evolve:RegisterPluginSettings( plugin ) end
 	else
 		table.insert( evolve.plugins, { Title = plugin.Title, File = pluginFile } )
 	end
@@ -471,10 +492,6 @@ function evolve:SetProperty( uniqueid, id, value )
 end
 
 function evolve:CommitProperties()
-	/*-------------------------------------------------------------------------------------------------------------------------
-		Check if a cleanup would be convenient
-	-------------------------------------------------------------------------------------------------------------------------*/
-	
 	local count = table.Count( evolve.PlayerInfo )
 	
 	if ( count > 800 ) then
@@ -509,6 +526,14 @@ hook.Add( "PlayerSpawnedNPC", "EV_SpawnHook", function( ply, ent ) ent.EV_Owner 
 hook.Add( "PlayerSpawnedVehicle", "EV_SpawnHook", function( ply, ent ) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " spawned vehicle '" .. ent:GetClass() .. "'." ) end )
 hook.Add( "PlayerSpawnedEffect", "EV_SpawnHook", function( ply, model, ent ) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " spawned effect '" .. model .. "'." ) end )
 hook.Add( "PlayerSpawnedRagdoll", "EV_SpawnHook", function( ply, model, ent ) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " spawned ragdoll '" .. model .. "'." ) end )
+
+-- darkrp hooking abound
+--[[hook.Add( "playerboughtcustomvehicle", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought custom vehicle '" .. entityTable.entity .. "'." ) end )
+hook.Add( "playerboughtvehicle", "EV_SpawnHook", function( ply, ent, cost) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought vehicle '" .. ent:GetModel() .. "'." ) end )
+hook.Add( "playerboughtshipment", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought shipment '" .. entityTable.entity .. "'." ) end )
+hook.Add( "playerboughtdoor", "EV_SpawnHook", function( ply, ent, cost ) return true end )
+hook.Add( "playerboughtcustomentity", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " custom entity '" .. entityTable.entity .. "'." ) end )
+hook.Add( "playerboughtpistol", "EV_SpawnHook", function( ply, entityTable, ent, price) ent.EV_Owner = ply:UniqueID() evolve:Log( evolve:PlayerLogStr( ply ) .. " bought pistol '" .. entityTable.entity .. "'." ) end )]]
 
 evolve.AddCount = _R.Player.AddCount
 function _R.Player:AddCount( type, ent )
@@ -901,6 +926,8 @@ if ( SERVER ) then
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"tool ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
 						elseif (string.sub(privilege,1,1)=="@") then
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"swep ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
+						elseif (string.sub(privilege,1,1)=="&") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"player model ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
 						else
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," granted access of ",evolve.colors.red,"privilege ",evolve.colors.blue,privilege,evolve.colors.white," to ",evolve.colors.red,rank,evolve.colors.white,".")
 						end
@@ -914,6 +941,8 @@ if ( SERVER ) then
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"tool ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
 						elseif (string.sub(privilege,1,1)=="@") then
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"swep ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
+						elseif (string.sub(privilege,1,1)=="&") then
+							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"player model ",evolve.colors.blue,string.sub(privilege,2),evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
 						else
 							evolve:Notify(evolve.colors.blue,ply:Nick(),evolve.colors.white," revoked access of ",evolve.colors.red,"privilege ",evolve.colors.blue,privilege,evolve.colors.white," from ",evolve.colors.red,rank,evolve.colors.white,".")
 						end
@@ -1169,6 +1198,207 @@ else
 	end )
 end
 
+
+/*-------------------------------------------------------------------------------------------------------------------------
+	Settings system
+-------------------------------------------------------------------------------------------------------------------------*/
+
+--[[ 
+	todo:
+	declare setting types,
+	add some junk in PLUGIN and TAB loading for settings
+	allow for user-specific settings
+	LOCK THIS WAY DOWN
+]]
+function evolve:GetSetting( name, default )
+	if evolve.settings[name] == nil then 
+		return default
+	elseif evolve.settings[name].value == nil then
+		-- in the incredibly unlikely chance that we access and the value is nil
+		return evolve.settings[name].default
+	else
+		return evolve.settings[name].value
+	end
+end
+
+function evolve:SendSettings( ply )
+	if CLIENT and !LocalPlayer():EV_HasPrivilege( "Settings: Send To Server" ) then
+		return false
+	end
+	net.Start("EV_Settings")
+	net.WriteString("save")
+	local loaded = {}
+	for k,v in pairs(evolve.settingsdelta) do
+		loaded[k] = v
+	end
+	net.WriteTable(loaded)
+	if CLIENT then
+		net.SendToServer()
+	elseif SERVER and ply then
+		net.Send(ply)
+	elseif SERVER then
+		net.Broadcast()
+	end
+	evolve.settingsdelta={}
+	return true
+end
+
+if SERVER then
+	function evolve:ClearSettings()
+		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
+			file.Delete( "ev_settings.txt", "DATA" )
+		end
+		--@TODO: Maybe make this rebuild evolve.settings? Not sure if we'd need that.
+	end
+	
+	function evolve:LoadSettings()
+		if ( file.Exists( "ev_settings.txt", "DATA" ) ) then
+			local loaded = von.deserialize( file.Read( "ev_settings.txt", "DATA" ) )
+			for k,v in pairs(loaded) do
+				--x@TODO: do some validaiton here I guess, we would use SetSetting but you know
+				if evolve.settings[k]==nil then evolve.settings[k]={} end
+				evolve.settings[k].value = v 
+				if ConVarExists(k) and GetConVarString(k)~=tostring(v) then
+					RunConsoleCommand("ev", "convar", k, v)
+				end
+			end
+		end
+	end
+	function evolve:SaveSettings()
+		-- will probably have a client version at some point
+		local loaded = {}
+		for k,v in pairs(evolve.settings) do
+			loaded[k] = v.value
+		end
+		file.Write( "ev_settings.txt", von.serialize(loaded) )
+	end
+	
+	net.Receive( "EV_Settings", function( length, ply )
+		-- on = sending, off = requesting
+		local doit = net.ReadString()
+		print("GOT NETWORK MESSAGE: "..doit.." len="..length.."bits")
+		if ( IsValid( ply ) and ply:IsPlayer() ) then
+			if doit == "save" then
+				if ply:EV_HasPrivilege( "Settings: Send To Server" ) then
+					table.Merge(evolve.settingsdelta, net.ReadTable())
+					for k,v in pairs(evolve.settingsdelta) do
+						evolve.settings[k].value = v
+					end
+					--x@TODO: do a step-by-step validation of the settings instead of global overwrite
+					evolve:SaveSettings()
+					-- tell our clients that our settings changed
+					evolve:SendSettings()
+				else
+					-- we don't care what the player has to say, dump the rest of their message
+					-- this should normally never happen but in the case of hacks, anything is possible
+					net.ReadUInt(length-(8+string.len(doit)*8)) --8bits for every ASCII char.
+				end
+			elseif doit == "send" then
+				evolve:SendSettings(ply)
+			end
+		end
+	end )
+elseif CLIENT then
+	function evolve:GetSettings()
+		net.Start("EV_Settings")
+		net.WriteString("send") -- request from server
+		net.SendToServer()
+	end
+	
+	function evolve:SetSetting( name, value )
+		-- elm, name, item, value
+		local ply = LocalPlayer()
+		local item = evolve.settings[name]
+		if ply:EV_HasPrivilege( "Settings: Modify" ) then
+			--allowed to modify the control
+			
+			-- convar check
+			if item.isconvar then
+				if ply:EV_HasPrivilege( "Convar changing" ) then
+					-- special bool->number converting
+					local pass = value
+					if type(value)=="boolean" then
+						pass = evolve:BoolToInt(value)*(item.multiplier or 1)
+					end
+					RunConsoleCommand("ev", "convar", name, pass)
+				else
+					evolve:Notify( ply, evolve.colors.red, "You can't change convars." )
+				end
+			end
+			
+			evolve.settings[name].value = value
+			evolve.settingsdelta[name] = value
+			--x@TODO: make auto-send-on-set an option of its own
+			evolve:SendSettings()
+		else
+			evolve:Notify( ply, evolve.colors.red, "You can't modify these settings." )
+		end
+	end
+	
+	net.Receive( "EV_Settings", function( length )
+		-- on = sending, off = requesting
+		local doit = net.ReadString()
+		if doit == "save" then
+			local loaded = net.ReadTable()
+			for k,v in pairs(loaded) do
+				if evolve.settings[k]==nil then evolve.settings[k]={} end
+				evolve.settings[k].value = v
+			end
+		elseif doit == "send" then
+			evolve:SendSettings()
+		end
+	end )
+end
+function evolve:RecurseRegister( mergepoint, settings )
+	for k,v in pairs(settings) do
+		if v.stype == "category" then
+			evolve:RecurseRegister( evolve.settings, v.value )
+		else
+			for k2,v2 in pairs(v) do
+				local prevalue = v.value
+				mergepoint[k] = v
+				if prevalue~=nil then
+					mergepoint[k].value = prevalue
+				else
+					mergepoint[k].value = mergepoint[k].default
+				end
+			end
+		end
+	end
+end
+function evolve:RegisterSettings( sets )
+	table.Merge(evolve.settingsStructure, sets)
+	evolve:RecurseRegister(evolve.settings, sets)
+	return evolve.settings
+end
+function evolve:RegisterPluginSettings( plugin )
+	local desc = plugin.Description or 'Mysterious Plugin, No Description Set!'
+	local icon = plugin.Icon or 'help'
+	local label = plugin.Title or 'Unknown'
+	local value = table.Copy(plugin.Settings) or {} --@DEV: in an ideal world maybe we could keep the settings here
+	local del = evolve.settingsStructure.category_plugins.value
+	del['category_'..string.lower(label)] = {
+		desc = desc,
+		icon = icon,
+		label = label,
+		stype = 'category',
+		value = value
+	}
+	for k,v in pairs( del['category_'..string.lower(label)].value ) do
+		local prevalue = nil
+		if evolve.settings[k]~=nil then
+			prevalue = evolve.settings[k].value
+		end
+		evolve.settings[k] = v
+		if prevalue~=nil then
+			evolve.settings[k].value = prevalue
+		else
+			evolve.settings[k].value = evolve.settings[k].default
+		end
+	end
+end
+
+
 /*-------------------------------------------------------------------------------------------------------------------------
 	Global data system
 -------------------------------------------------------------------------------------------------------------------------*/
@@ -1239,6 +1469,10 @@ end
 
 hook.Add( "InitPostEntity", "EV_LogInit", function()
 	evolve:Log( "== Started in map '" .. game.GetMap() .. "' and gamemode '" .. GAMEMODE.Name .. "' ==" )
+	--@DEV: we gotta do this here to overwrite server.cfg items
+	if SERVER and evolve:GetSetting('settings_overload_servercfg', false) then
+		evolve:LoadSettings()
+	end
 end )
 
 hook.Add( "PlayerDisconnected", "EV_LogDisconnect", function( ply )

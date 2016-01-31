@@ -10,4 +10,5 @@ net.Receive( "EV_Init", function( length )
 	evolve.installed = true
 	
 	evolve:LoadPlugins()
+  evolve:GetSettings()
 end )

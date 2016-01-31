@@ -6,6 +6,7 @@ evolve.MENU = {}
 local MENU = evolve.MENU
 MENU.Tabs = {}
 MENU.Privileges = {}
+MENU.IsVisible = false
 
 function evolve:RegisterTab( tab )
 	if ( tab.IsAllowed and !tab:IsAllowed() ) then return false end
@@ -101,6 +102,7 @@ hook.Add( "EV_RankPrivilegeChange", "EV_MenuPrivUpdate", function( rank, privile
 end )
 
 function MENU:Show()
+	self.IsVisible = !self.IsVisible
 	if ( !LocalPlayer():EV_HasPrivilege( "Menu" ) ) then return end
 	if ( !self.Panel ) then MENU:Initialize() end
 	
@@ -124,6 +126,7 @@ function MENU:Show()
 end
 
 function MENU:Hide()
+	self.IsVisible = !self.IsVisible
 	if ( !self.Panel ) then return end
 	
 	self.Panel:SetKeyboardInputEnabled( false )
@@ -139,5 +142,14 @@ function MENU:Hide()
 	end )
 end
 
+function MENU:Toggle()
+	if self.IsVisible then
+		self:Hide()
+	else
+		self:Show()
+	end
+end
+
 concommand.Add( "+ev_menu", function() MENU:Show() end )
 concommand.Add( "-ev_menu", function() MENU:Hide() end )
+concommand.Add( "ev_menu_toggle", function() MENU:Toggle() end )

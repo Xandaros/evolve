@@ -9,11 +9,22 @@ PLUGIN.Author = "Overv"
 PLUGIN.ChatCommand = "armor"
 PLUGIN.Usage = "[players] [armor]"
 PLUGIN.Privileges = { "Armor" }
+PLUGIN.Icon = 'shield'
+PLUGIN.Settings = {
+	max_armor = {
+		label = 'Max Armor',
+		desc = 'Source Engine overflow Prevention',
+		stype = 'limit',
+		min = 100,
+		max = 255,
+		default = 100
+	},
+}
 
 function PLUGIN:Call( ply, args )
 	if ( ply:EV_HasPrivilege( "Armor" ) ) then
 		local players = evolve:FindPlayer( args, ply, true )
-		local armor = tonumber( args[ #args ] ) or 100
+		local armor = tonumber( args[ #args ] ) or evolve:GetSetting('max_armor', 100)
 		
 		for _, pl in ipairs( players ) do
 			pl:SetArmor( armor )
