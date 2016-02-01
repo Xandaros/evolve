@@ -124,16 +124,23 @@ if ( SERVER ) then
 		end
 		
 		local str = ""
+		local dontlog = false
 		for _, v in ipairs( arg ) do
-			if ( type( v ) == "string" ) then str = str .. v end
+			if ( type( v ) == "string" ) then
+				str = str .. v
+			elseif ( type( v ) == "bool" && v == true) then
+				dontlog = true
+			end
 		end
-		
-		if ( ply ) then
-			print( "[EV] " .. ply:Nick() .. " -> " .. str )
-			evolve:Log( evolve:PlayerLogStr( ply ) .. " -> " .. str )
-		else
-			print( "[EV] " .. str )
-			evolve:Log( str )
+				
+		if( !dontlog ) then
+			if ( ply ) then
+				print( "[EV] " .. ply:Nick() .. " -> " .. str )
+				evolve:Log( evolve:PlayerLogStr( ply ) .. " -> " .. str )
+			else
+				print( "[EV] " .. str )
+				evolve:Log( str )
+			end
 		end
 	end
 else

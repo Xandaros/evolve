@@ -19,7 +19,7 @@ if (SERVER) then
 		for k,v in pairs(adverts.Stored) do
 			timer.Create("Advert_"..k, v.Time, 0, function() 
 				if (#player.GetAll() > 0) then
-					evolve:Notify(v.Colour, v.Msg) 
+					evolve:Notify(v.Colour, v.Msg, true) 
 				end
 			end)				
 			if (v.OnState == false) then
