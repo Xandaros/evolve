@@ -3,7 +3,7 @@ PLUGIN.Title = "Advert3"
 PLUGIN.Description = "Add, remove, modify adverts."
 PLUGIN.Author = "SariaFace"
 PLUGIN.ChatCommand = "advert3"
-PLUGIN.Usage = "[add;remove;list;toggle][advert id][r][g][b][interval][message]"
+PLUGIN.Usage = "[add;remove;list;toggle][advert id][r][g][b][interval][state][message]"
 PLUGIN.Privileges = { "Advert 3" }
 
 if (SERVER) then
@@ -32,21 +32,27 @@ if (SERVER) then
 	------------------------------------------------------------------------------------
 	function adverts.add(info)
 		info[1] = info[1]:lower()
-		if #info > 6 then 
-			info[6] = table.concat(info, " ", 6, #info)
-		elseif #info < 6 then 
+		if #info > 7 then 
+			info[7] = table.concat(info, " ", 7, #info)
+		elseif #info < 7 then 
 			return "Advert: Incorrect arguements for Add" 
 		end
 		local ow
+		if (!tonumber(info[5]) || tonumber(info[5])<60) then
+			return "Advert: Incorrect Time input, value must be equal or greater than 60!"
+		end
+		if (#string.Trim(info[7])==0) then
+			return "Advert: A message is required!"
+		end
 		if adverts.Stored[info[1]] then 
-			ow = "Overwriting advert \""..adverts.Stored[info[1]].."\"." 
+			ow = "Overwriting advert \""..info[1].."\"." 
 		end
 		
 		adverts.Stored[info[1]] = {
 			["Colour"] = Color(tonumber(info[2]),tonumber(info[3]),tonumber(info[4])),
 			["Time"] = info[5],
-			["Msg"] = info[6],
-			["OnState"] = true
+			["Msg"] = info[7],
+			["OnState"] = tobool(info[6])
 		}
 		timer.Create("Advert_"..info[1], adverts.Stored[info[1]].Time, 0, function()
 			if (#player.GetAll() > 0) then
@@ -76,7 +82,7 @@ if (SERVER) then
 		return str or "No adverts loaded."
 	end
 	--------------------------------------------------------------------------------------------
-	function adverts.toggle(args)
+	function adverts.toggle(args)	
 		if #args > 2 then return "Advert: Incorrect arguements for toggling" end
 		if adverts.Stored[args[1]:lower()] then
 			if !args[2] then
@@ -89,6 +95,7 @@ if (SERVER) then
 				adverts.Stored[args[1]].OnState = false
 				timer.Pause("Advert_"..args[1])
 			end
+			writeToFile(adverts.Stored)
 			return "Advert "..args[1].."'s On-State has been set to "..tostring(adverts.Stored[args[1]].OnState)
 		else
 			return "Advert: ID not found."

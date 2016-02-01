@@ -54,12 +54,15 @@ if (SERVER) then
   util.AddNetworkString("EV_Adverts3")
 else
   local NewAdPanelReg = {}
-	function NewAdPanelReg:Init()
+	function NewAdPanelReg:Setup()
+		--Attention: EditAdPanelReg extends this function.
+		--If you want to add/change something specific to NewAdPanelReg, do it in NewAdPanelReg:Init() below
+			
 		self:SetPos( 40, (ScrH()/3)*2)
 		self:SetSize(560, 62)
 		self:SetTitle("Add new advert")
-		self:MakePopup()
-		self:SetZPos(999999)
+		self:SetZPos(32767)
+		self:DoModal(true)
 		
 		self.IDLabel = vgui.Create("DLabel", self)
 		self.IDLabel:SetText("ID")
@@ -137,28 +140,76 @@ else
 		self.Msg:SetPos(194, (self:GetTall()-24))
 		self.Msg:SetSize(260, 20)
 		
+		self.OnStateCheckbox = vgui.Create("DCheckBox", self)
+		self.OnStateCheckbox:SetPos( 456, (self:GetTall()-22))
+		self.OnStateCheckbox:SetValue(1)
+		
 		self.AddBut = vgui.Create( "DButton", self )
 		self.AddBut:SetSize( 60, 22 )
 		self.AddBut:SetPos( self:GetWide() - 68, (self:GetTall()-26) )
 		self.AddBut:SetText( "Add" )
 		self.AddBut.DoClick = function()
-			if (!tonumber(self.Interval:GetValue())) then
-				evolve:Notify(LocalPlayer(), evolve.colors.red, "Incorrect Time input!")
-				self:Remove()
+			if (!tonumber(self.Interval:GetValue()) || tonumber(self.Interval:GetValue())<60) then
+				evolve:Notify(LocalPlayer(), evolve.colors.red, "Incorrect Time input, value must be equal or greater than 60!")
+				return
+			end
+			if (#string.Trim(self.Msg:GetValue())==0) then
+				evolve:Notify(LocalPlayer(), evolve.colors.red, "A message is required!")
 				return
 			end
 			local newAd = {}
 			newAd.Colour = {["r"] = self.ColourR:GetValue(), ["g"] = self.ColourG:GetValue(), ["b"] = self.ColourB:GetValue(), ["a"] = "255"} 
 			newAd.Time =  self.Interval:GetValue()
 			newAd.Msg = self.Msg:GetValue()
-			newAd.OnState = true
-			RunConsoleCommand("ev", "advert3", "add", self.IDInput:GetValue(), newAd.Colour["r"], newAd.Colour["g"], newAd.Colour["b"], tostring(newAd.Time), newAd.Msg)
+			newAd.OnState = tostring(self.OnStateCheckbox:GetChecked())
+			RunConsoleCommand("ev", "advert3", "add", self.IDInput:GetValue(), newAd.Colour["r"], newAd.Colour["g"], newAd.Colour["b"], tostring(newAd.Time), newAd.OnState, newAd.Msg)
 			adverts[self.IDInput:GetValue()] = newAd
 			timer.Simple(1.0, function() TAB:Update() end)
 			self:Remove()
+			return true
 		end
 	end
+		
+	function NewAdPanelReg:Init()
+		self:Setup()
+		self:MakePopup()
+	end	
 	vgui.Register("NewAdPanel", NewAdPanelReg, "DFrame")
+	
+	--EditAdPanelReg extends NewAdPanelReg
+	local EditAdPanelReg = table.Copy(NewAdPanelReg)
+	function EditAdPanelReg:Init()
+		self:Setup()
+		self:SetTitle("Edit advert")
+		self.AddBut:SetText( "Update" )
+		self.IDInput:SetEditable( false )
+		self.IDInput:SetDisabled( true )
+		if TAB.AdList:GetSelected() && #TAB.AdList:GetSelected() > 0 then
+			local id = TAB.AdList:GetSelected()[1]:GetValue(1)
+			self.IDInput:SetValue(id)
+			self.ColourR:SetValue(adverts[id].Colour["r"])
+			self.ColourG:SetValue(adverts[id].Colour["g"])
+			self.ColourB:SetValue(adverts[id].Colour["b"])
+			self.Interval:SetValue(adverts[id].Time)
+			self.Msg:SetValue(adverts[id].Msg)
+			self.OnStateCheckbox:SetValue(adverts[id].OnState)
+			
+			local DoClick = self.AddBut.DoClick
+			self.AddBut.DoClick = function()
+				local result = DoClick()
+				if(result) then
+					TAB.AdList:GetSelected()[1]:SetValue(2, adverts[id].Colour["r"]..","..adverts[id].Colour["g"]..","..adverts[id].Colour["b"])
+					TAB.AdList:GetSelected()[1]:SetValue(3, adverts[id].Time)
+					TAB.AdList:GetSelected()[1]:SetValue(4, adverts[id].Msg)
+					TAB.AdList:GetSelected()[1]:SetValue(5, adverts[id].OnState)
+				end
+			end
+		else
+			evolve:Notify(LocalPlayer(), evolve.colors.red, "Nothing selected!")
+		end
+		self:MakePopup()
+	end
+	vgui.Register("EditAdPanel", EditAdPanelReg, "DFrame")
 end
 
 function TAB:GetAdverts(ply)
@@ -172,75 +223,113 @@ function TAB:GetAdverts(ply)
 end
 
 --===================================================================================--
-function TAB:Initialize( pnl )
-  adverts = {}
-  
-	self.AdList = vgui.Create( "DListView", pnl )
-	self.AdList:SetSize( self.Width, pnl:GetParent():GetTall() - 58 )
-	self.AdList:SetMultiSelect( false )
-	self.AdList:AddColumn( "ID" ):SetFixedWidth( 70 )
-	self.AdList:AddColumn( "Colour" ):SetFixedWidth( 70 )
-	self.AdList:AddColumn( "Time(s)" ):SetFixedWidth( 40 )
-	self.AdList:AddColumn( "Message" ):SetFixedWidth( 308 )
-	self.AdList:AddColumn( "Active" ):SetFixedWidth( 32 )
 
-	self.New = vgui.Create( "DButton", pnl )
-	self.New:SetSize( 60, 22 )
-	self.New:SetPos( self.Width - 275, pnl:GetParent():GetTall() - 53 )
-	self.New:SetText( "ReSync" )
-	self.New.DoClick = function()
-		self:Request()
+if(CLIENT) then
+	function TAB:Initialize( pnl )
+	  adverts = {}
+	  
+		self.AdList = vgui.Create( "DListView", pnl )
+		self.AdList:SetSize( self.Width, pnl:GetParent():GetTall() - 58 )
+		self.AdList:SetMultiSelect( false )
+		self.AdList:AddColumn( "ID" ):SetFixedWidth( 70 )
+		self.AdList:AddColumn( "Colour" ):SetFixedWidth( 70 )
+		self.AdList:AddColumn( "Time(s)" ):SetFixedWidth( 40 )
+		self.AdList:AddColumn( "Message" ):SetFixedWidth( 302 )
+		self.AdList:AddColumn( "Active" ):SetFixedWidth( 32 )
+
+		self.ResyncButton = vgui.Create( "DButton", pnl )
+		self.ResyncButton:SetSize( 60, 22 )
+		self.ResyncButton:SetPos( self.Width - 340, pnl:GetParent():GetTall() - 53 )
+		self.ResyncButton:SetText( "ReSync" )
+		self.ResyncButton.DoClick = function()
+			self:Request()
+		end
+		
+		self.NewButton = vgui.Create( "DButton", pnl )
+		self.NewButton:SetSize( 60, 22 )
+		self.NewButton:SetPos( self.Width - 275, pnl:GetParent():GetTall() - 53 )
+		self.NewButton:SetText( "New" )
+		self.NewButton.DoClick = function()
+			newAdInput = vgui.Create("NewAdPanel", pnl)
+		end
+		
+		self.EditButton = vgui.Create( "DButton", pnl )
+		self.EditButton:SetSize( 60, 22 )
+		self.EditButton:SetPos( self.Width - 210, pnl:GetParent():GetTall() - 53 )
+		self.EditButton:SetText( "Edit" )
+		self.EditButton:SetDisabled( true )
+		self.EditButton.DoClick = function()
+			editAdInput = vgui.Create("EditAdPanel", pnl)
+		end		
+		
+		self.ToggleButton = vgui.Create( "DButton", pnl )
+		self.ToggleButton:SetSize( 60, 22 )
+		self.ToggleButton:SetPos( self.Width - 145, pnl:GetParent():GetTall() - 53 )
+		self.ToggleButton:SetText( "Toggle" )
+		self.ToggleButton:SetDisabled( true )
+		self.ToggleButton.DoClick = function()
+			if self.AdList:GetLines() && #self.AdList:GetSelected() > 0 then
+				local id = self.AdList:GetSelected()[1]:GetValue(1)
+				RunConsoleCommand("ev", "advert3", "toggle", id)
+				adverts[id]["OnState"] = !adverts[id]["OnState"]
+				self.AdList:GetSelected()[1]:SetValue(5, adverts[id]["OnState"])
+			else
+				evolve:Notify(LocalPlayer(), evolve.colors.red, "Nothing selected!")
+			end
+		end
+		
+		self.RemoveButton = vgui.Create( "DButton", pnl )
+		self.RemoveButton:SetSize( 60, 22 )
+		self.RemoveButton:SetPos( self.Width - 80, pnl:GetParent():GetTall() - 53 )
+		self.RemoveButton:SetText( "Remove" )
+		self.RemoveButton:SetDisabled( true )
+		self.RemoveButton.DoClick = function()
+			if self.AdList:GetSelected() && #self.AdList:GetSelected() > 0 then
+				local id = self.AdList:GetSelected()[1]:GetValue(1)
+				RunConsoleCommand("ev", "advert3", "remove", id)
+				adverts[id] = nil
+			end
+			self:Update()
+		end
+		timer.Simple(1.5, function() TAB:Request() end)	
 	end
-	
-	self.New = vgui.Create( "DButton", pnl )
-	self.New:SetSize( 60, 22 )
-	self.New:SetPos( self.Width - 210, pnl:GetParent():GetTall() - 53 )
-	self.New:SetText( "New" )
-	self.New.DoClick = function()
-		local newAdInput = vgui.Create("NewAdPanel")
+
+	function TAB:Update()
+		local oldSelectedId = 0
+		local selectLine
+		if self.AdList:GetSelected() && #self.AdList:GetSelected() > 0 then
+			oldSelectedId = self.AdList:GetSelected()[1]:GetValue(1)
+		end
+		self.AdList:Clear()
+		for id,data in pairs(adverts) do
+			local line = self.AdList:AddLine( id, data.Colour["r"]..","..data.Colour["g"]..","..data.Colour["b"], data.Time, data.Msg, tostring(data.OnState));
+			if(id == oldSelectedId ) then
+				selectLine = line
+			end
+		end
+		if(#self.AdList:GetLines() > 0) then
+			self.EditButton:SetDisabled( false )
+			self.ToggleButton:SetDisabled( false )
+			self.RemoveButton:SetDisabled( false )
+			if(selectLine) then
+				self.AdList:SelectItem(selectLine)
+			else
+				self.AdList:SelectFirstItem()
+			end			
+		else
+			self.EditButton:SetDisabled( true )
+			self.ToggleButton:SetDisabled( true )
+			self.RemoveButton:SetDisabled( true )
+		end
 	end
-	
-	self.Tog = vgui.Create( "DButton", pnl )
-	self.Tog:SetSize( 60, 22 )
-	self.Tog:SetPos( self.Width - 145, pnl:GetParent():GetTall() - 53 )
-	self.Tog:SetText( "Toggle" )
-	self.Tog.DoClick = function()
-    if self.AdList:GetSelected() then
-      local id = self.AdList:GetSelected()[1]:GetValue(1)
-    end
-		RunConsoleCommand("ev", "advert3", "toggle", id)
-		adverts[id]["OnState"] = !adverts[id]["OnState"]
-		self.AdList:GetSelected()[1]:SetValue(5, adverts[id]["OnState"])
+
+	function TAB:Request()
+		self:GetAdverts()
+		timer.Simple(2, function() TAB:Update() end)
 	end
-	
-	self.Rem = vgui.Create( "DButton", pnl )
-	self.Rem:SetSize( 60, 22 )
-	self.Rem:SetPos( self.Width - 80, pnl:GetParent():GetTall() - 53 )
-	self.Rem:SetText( "Remove" )
-	self.Rem.DoClick = function()
-		local id = self.AdList:GetSelected()[1]:GetValue(1)
-		RunConsoleCommand("ev", "advert3", "remove", id)
-		adverts[id] = nil
-		self:Update()
+
+	function TAB:IsAllowed()
+		return LocalPlayer():EV_HasPrivilege( "Advert 3 Menu" )
 	end
-	timer.Simple(1.5, function() TAB:Request() end)	
 end
-
-function TAB:Update()
-	self.AdList:Clear()
-	for id,data in pairs(adverts) do
-		local line = self.AdList:AddLine( id, data.Colour["r"]..","..data.Colour["g"]..","..data.Colour["b"], data.Time, data.Msg, data.OnState);
-	end
-	self.AdList:SelectFirstItem()
-end
-
-function TAB:Request()
-	self:GetAdverts()
-	timer.Simple(2, function() TAB:Update() end)
-end
-
-function TAB:IsAllowed()
-	return LocalPlayer():EV_HasPrivilege( "Advert 3 Menu" )
-end
-
 evolve:RegisterTab( TAB )
