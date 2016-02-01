@@ -118,6 +118,12 @@ local testsettings = {
 						stype = 'bool',
 						default = true,
 					},
+					settings_plugin_blacklist = {
+						label = 'Blacklist plugins (seperated by comma)',
+						desc = 'These plugins will skip loading on next map change. Use only the part of filename between cl_, sh_, sv_ and .lua',
+						stype = 'string',
+						default = '',
+					},					
 				},
 			},
 		},

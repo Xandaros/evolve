@@ -237,14 +237,23 @@ end
 function evolve:LoadPlugins()	
 	evolve.plugins = {}
 	
+	local _blacklist = string.Split(evolve:GetSetting('settings_plugin_blacklist', ''), ' ')
+	local blacklist = {}
+	for _,name in pairs(_blacklist) do
+		if(#string.Trim(name)>0) then
+			blacklist[name] = true
+		end
+	end
+	
 	local plugins,_ = file.Find( "ev_plugins/*.lua", "LUA" )
 	for _, plugin in ipairs( plugins ) do
 		local prefix = string.Left( plugin, string.find( plugin, "_" ) - 1 )
+		local filename = string.sub( plugin, 4, -5 )
 		evolve.pluginFile = plugin
-		
-		if ( CLIENT and ( prefix == "sh" or prefix == "cl" ) ) then
+				
+		if ( !blacklist[filename] and CLIENT and ( prefix == "sh" or prefix == "cl" ) ) then
 			include( "ev_plugins/" .. plugin )
-		elseif ( SERVER ) then
+		elseif ( !blacklist[filename] and SERVER ) then
 			include( "ev_plugins/" .. plugin )
 			if ( prefix == "sh" or prefix == "cl" ) then AddCSLuaFile( "ev_plugins/" .. plugin ) end
 		end
