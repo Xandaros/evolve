@@ -1138,7 +1138,12 @@ if ( SERVER ) then
 					pl:Kick( "Banned for " .. length / 60 .. " minutes! (" .. reason .. ")" )
 				end
 			else
-				game.ConsoleCommand( "addip " .. length / 60 .. " \"" .. string.match( evolve:GetProperty( uid, "IPAddress" ), "(%d+%.%d+%.%d+%.%d+)" ) .. "\"\n" )
+				local steamid = evolve:GetProperty( uid, "SteamID" )
+				if(steamid) then
+					game.ConsoleCommand( "banid " .. length / 60 .. " " .. steamid .. "\n" )
+				else
+					game.ConsoleCommand( "addip " .. length / 60 .. " \"" .. string.match( evolve:GetProperty( uid, "IPAddress" ), "(%d+%.%d+%.%d+%.%d+)" ) .. "\"\n" )
+				end
 			end
 		end
 	end
