@@ -14,35 +14,35 @@ end
 
 function PLUGIN:Call( ply, args )
 	local commands = {}
-	if ( ply:IsValid() ) then
-		for _, plug in ipairs( evolve.plugins ) do
-			if ( plug.ChatCommand ) then
-				if type(plug.ChatCommand) == "string" then
-					table.insert(commands, {plug.ChatCommand, plug.Usage, plug.Description})
-				else
-					for k, ChatCommand in ipairs( plug.ChatCommand ) do
-						local usage, description
-						
-						if (type(plug.Usage) == "table") then
-							usage = plug.Usage[k]
-						else
-							usage = plug.Usage
-						end
-						
-						if (type(plug.Description) == "table") then
-							description = plug.Description[k]
-						else
-							description = plug.Description
-						end
-						
-						table.insert(commands, {ChatCommand, tostring(usage), description})
+	for _, plug in ipairs( evolve.plugins ) do
+		if ( plug.ChatCommand ) then
+			if type(plug.ChatCommand) == "string" then
+				table.insert(commands, { ["ChatCommand"] = plug.ChatCommand, ["Description"] = plug.Description, ["Usage"] = plug.Usage })
+			else
+				for k, ChatCommand in ipairs( plug.ChatCommand ) do
+					local usage, description
+					
+					if (type(plug.Usage) == "table") then
+						usage = plug.Usage[k]
+					else
+						usage = plug.Usage
 					end
+					
+					if (type(plug.Description) == "table") then
+						description = plug.Description[k]
+					else
+						description = plug.Description
+					end
+
+					table.insert(commands, { ["ChatCommand"] = ChatCommand, ["Description"] = description, ["Usage"] = usage })
 				end
 			end
 		end
-		
-		table.SortByMember(commands, 1, function(a,b) return a > b end)
-		
+	end
+	
+	table.SortByMember( commands, "ChatCommand", function( a, b ) return a > b end )
+
+	if ( ply:IsValid() ) then
 		net.Start( "EV_Command" )
 			net.WriteBit( false )
 			net.WriteString( "\n============ Available chat commands for Evolve ============\n" )
@@ -51,9 +51,9 @@ function PLUGIN:Call( ply, args )
 		for k,cmd in pairs(commands) do
 			net.Start( "EV_Command" )
 				net.WriteBit( true )
-				net.WriteString( cmd[1] or "" )
-				net.WriteString( cmd[2] or "" )
-				net.WriteString( cmd[3] or "" )
+				net.WriteString( cmd.ChatCommand or "" )
+				net.WriteString( cmd.Description or "" )
+				net.WriteString( cmd.Usage or "" )
 			net.Send( ply )
 		end
 		
@@ -65,12 +65,10 @@ function PLUGIN:Call( ply, args )
 		evolve:Notify( ply, evolve.colors.white, "All chat commands have been printed to your console." )
 	else
 		for _, plugin in ipairs( commands ) do
-			if ( plugin.ChatCommand ) then
-				if ( plugin.Usage ) then
-					print( "!" .. plugin.ChatCommand .. " " .. plugin.Usage .. " - " .. plugin.Description )
-				else
-					print( "!" .. plugin.ChatCommand .. " - " .. plugin.Description )
-				end
+			if ( plugin.Usage ) then
+				print( "!" .. plugin.ChatCommand .. " " .. plugin.Usage .. " - " .. plugin.Description )
+			else
+				print( "!" .. plugin.ChatCommand .. " - " .. plugin.Description )
 			end
 		end
 	end
