@@ -28,7 +28,7 @@ local function formattime( time )
 end
 
 function PLUGIN:Initialize()
-	if(self.RankUps && #self.RankUps == 0) then return end
+	if(self.RankUps && table.Count(self.RankUps) == 0) then return end
 	timer.Create("EV_RankOverTime",1,0,function()
 		for k,ply in ipairs( player.GetAll() ) do
 			local BlockRankOverTime = ply:GetProperty("BlockRankOverTime",false)
