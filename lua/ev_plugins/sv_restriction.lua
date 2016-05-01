@@ -117,8 +117,6 @@ function PLUGIN:PlayerCanPickupWeapon( ply, wep )
 		end
 		if ( GAMEMODE.IsSandboxDerived and table.HasValue( evolve.privileges, "@" .. wep:GetClass() ) and !ply:EV_HasPrivilege( "@" .. wep:GetClass() ) and ( !ply.EV_PickupTimeout or CurTime() < ply.EV_PickupTimeout ) ) then
 			return false
-		else
-			return true
 		end
 	end
 end
