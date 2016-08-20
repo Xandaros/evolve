@@ -67,5 +67,5 @@ The playername boxes were originally made by ColtoM.
 Troubleshooting
 ===============
 
-Problem: `Hook 'PlayerSpawn' in plugin 'Player Info' failed with error` or similar. Evolve not working at all.  
+Problem: Evolve not working at all.  
 Solution: You most likely didn't install vON correctly. Make sure you have a file "von.lua" in `addons/evolve/lua/includes/ev_von/`. If not, see the installation tutorial above and read it carefully.
