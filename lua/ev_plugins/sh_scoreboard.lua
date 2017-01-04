@@ -1,38 +1,38 @@
 /*-------------------------------------------------------------------------------------------------------------------------
-	Default custom scoreboard
+	TKZ Custom Scoreboard - ONLY FOR USE ON TheKillzone SERVERS
 -------------------------------------------------------------------------------------------------------------------------*/
 
-resource.AddFile( "materials/gui/scoreboard_header.vtf" )
-resource.AddFile( "materials/gui/scoreboard_header.vmt" )
-resource.AddFile( "materials/gui/scoreboard_middle.vtf" )
-resource.AddFile( "materials/gui/scoreboard_middle.vmt" )
-resource.AddFile( "materials/gui/scoreboard_bottom.vtf" )
-resource.AddFile( "materials/gui/scoreboard_bottom.vmt" )
-resource.AddFile( "materials/gui/scoreboard_ping.vtf" )
-resource.AddFile( "materials/gui/scoreboard_ping.vmt" )
-resource.AddFile( "materials/gui/scoreboard_frags.vtf" )
-resource.AddFile( "materials/gui/scoreboard_frags.vmt" )
-resource.AddFile( "materials/gui/scoreboard_skull.vtf" )
-resource.AddFile( "materials/gui/scoreboard_skull.vmt" )
-resource.AddFile( "materials/gui/scoreboard_playtime.vtf" )
-resource.AddFile( "materials/gui/scoreboard_playtime.vmt" )
-resource.AddFile( "materials/gui/scoreboard_propbrick.vtf" )
-resource.AddFile( "materials/gui/scoreboard_propbrick.vmt" )
+resource.AddFile( "materials/gui_tkz/scoreboard_header.vtf" )
+resource.AddFile( "materials/gui_tkz/scoreboard_header.vmt" )
+resource.AddFile( "materials/gui_tkz/scoreboard_middle.vtf" )
+resource.AddFile( "materials/gui_tkz/scoreboard_middle.vmt" )
+resource.AddFile( "materials/gui_tkz/scoreboard_bottom.vtf" )
+resource.AddFile( "materials/gui_tkz/scoreboard_bottom.vmt" )
+resource.AddFile( "materials/gui_tkz/scoreboard_ping.vtf" )
+resource.AddFile( "materials/gui_tkz/scoreboard_ping.vmt" )
+resource.AddFile( "materials/gui_tkz/scoreboard_frags.vtf" )
+resource.AddFile( "materials/gui_tkz/scoreboard_frags.vmt" )
+resource.AddFile( "materials/gui_tkz/scoreboard_skull.vtf" )
+resource.AddFile( "materials/gui_tkz/scoreboard_skull.vmt" )
+resource.AddFile( "materials/gui_tkz/scoreboard_playtime.vtf" )
+resource.AddFile( "materials/gui_tkz/scoreboard_playtime.vmt" )
+resource.AddFile( "materials/gui_tkz/scoreboard_propbrick.vtf" )
+resource.AddFile( "materials/gui_tkz/scoreboard_propbrick.vmt" )
 
 local PLUGIN = {}
-PLUGIN.Title = "Scoreboard"
-PLUGIN.Description = "Default custom scoreboard."
-PLUGIN.Author = "Overv"
+PLUGIN.Title = "TKZ Scoreboard"
+PLUGIN.Description = "TKZ Custom Scoreboard."
+PLUGIN.Author = "Overv, bellum128"
 
 if ( CLIENT ) then
-	PLUGIN.TexHeader = surface.GetTextureID( "gui/scoreboard_header" )
-	PLUGIN.TexMiddle = surface.GetTextureID( "gui/scoreboard_middle" )
-	PLUGIN.TexBottom = surface.GetTextureID( "gui/scoreboard_bottom" )
-	PLUGIN.TexPing = surface.GetTextureID( "gui/scoreboard_ping" )
-	PLUGIN.TexFrags = surface.GetTextureID( "gui/scoreboard_frags" )
-	PLUGIN.TexDeaths = surface.GetTextureID( "gui/scoreboard_skull" )
-	PLUGIN.TexPlaytime = surface.GetTextureID( "gui/scoreboard_playtime" )
-	PLUGIN.TexProps = surface.GetTextureID( "gui/scoreboard_propbrick" )
+	PLUGIN.TexHeader = surface.GetTextureID( "gui_tkz/scoreboard_header" )
+	PLUGIN.TexMiddle = surface.GetTextureID( "gui_tkz/scoreboard_middle" )
+	PLUGIN.TexBottom = surface.GetTextureID( "gui_tkz/scoreboard_bottom" )
+	PLUGIN.TexPing = surface.GetTextureID( "gui_tkz/scoreboard_ping" )
+	PLUGIN.TexFrags = surface.GetTextureID( "gui_tkz/scoreboard_frags" )
+	PLUGIN.TexDeaths = surface.GetTextureID( "gui_tkz/scoreboard_skull" )
+	PLUGIN.TexPlaytime = surface.GetTextureID( "gui_tkz/scoreboard_playtime" )
+	PLUGIN.TexProps = surface.GetTextureID( "gui_tkz/scoreboard_propbrick" )
 	
 	PLUGIN.Width = 687
 	
@@ -104,15 +104,16 @@ end
 
 function PLUGIN:DrawInfoBar()
 	// Background
-	surface.SetDrawColor( 192, 218, 160, 255 )
-	surface.DrawRect( self.X + 15, self.Y + 110, self.Width - 30, 28 )
+	self.Y = self.Y + 10
+	surface.SetDrawColor( 192, 220, 221, 255 )
+	surface.DrawRect( self.X + 15, self.Y + 120, self.Width - 30, 18 )
 	
-	surface.SetDrawColor( 168, 206, 116, 255 )
-	surface.DrawOutlinedRect( self.X + 15, self.Y + 110, self.Width - 30, 28 )
+	surface.SetDrawColor( 198, 212, 213, 255 )
+	surface.DrawOutlinedRect( self.X + 15, self.Y + 120, self.Width - 30, 18 )
 	
 	// Content
 	local x = self.X + 24
-	local y = self.Y + 118
+	local y = self.Y + 122
 	draw.SimpleText( "Currently playing ", "Default", x, y, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 	x = x + self:QuickTextSize( "Default", "Currently playing " )
 	draw.SimpleText( GAMEMODE.Name, "DefaultBold", x, y, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
@@ -128,6 +129,8 @@ function PLUGIN:DrawInfoBar()
 	local s = ""
 	if ( #player.GetAll() > 1 ) then s = "s" end
 	draw.SimpleText( " player" .. s .. ".", "Default", x, y, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+
+	self.Y = self.Y - 10
 end
 
 function PLUGIN:DrawUsergroup( playerinfo, usergroup, title, icon, y )
@@ -140,12 +143,12 @@ function PLUGIN:DrawUsergroup( playerinfo, usergroup, title, icon, y )
 	end
 	if ( !playersFound ) then return y end
 	
-	surface.SetDrawColor( 168, 206, 116, 255 )
-	surface.DrawRect( self.X + 0.5, y, self.Width - 2, 22 )
+	surface.SetDrawColor( 198, 212, 213, 255 )
+	surface.DrawRect( self.X + 7, y, self.Width - 14, 22 )
 	surface.SetMaterial( icon )
 	surface.SetDrawColor( 255, 255, 255, 255 )
 	surface.DrawTexturedRect( self.X + 15, y + 4, 14, 14 )
-	draw.SimpleText( title, "DefaultBold", self.X + 40, y + 6, Color( 39, 39, 39, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+	draw.SimpleText( title, "DefaultBold", self.X + 40, y + 4, Color( 39, 39, 39, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 	
 	self:DrawTexturedRect( self.TexPing, self.X + self.Width - 50, y + 4, 14, 14 )
 	self:DrawTexturedRect( self.TexPlaytime, self.X + self.Width - 100,  y + 4, 14, 14 )
@@ -153,7 +156,7 @@ function PLUGIN:DrawUsergroup( playerinfo, usergroup, title, icon, y )
 	self:DrawTexturedRect( self.TexFrags, self.X + self.Width - 190.5,  y + 4, 14, 14 )
 	self:DrawTexturedRect( self.TexProps, self.X + self.Width - 230.5,  y + 4, 14, 14 )
 	
-	y = y + 28
+	y = y + 26
 	
 	for _, pl in ipairs( playerinfo ) do
 		if ( pl.Usergroup == usergroup ) then
@@ -175,7 +178,7 @@ function PLUGIN:DrawPlayers()
 	local playerInfo = {}
 	for _, v in pairs( player.GetAll() ) do
 		table.insert( playerInfo, { Nick = v:Nick(), Usergroup = v:EV_GetRank(), Frags = v:Frags(), Deaths = v:Deaths(), Ping = v:Ping(), PlayTime = evolve:Time() - v:GetNWInt( "EV_JoinTime" ) + v:GetNWInt( "EV_PlayTime" )
-		, Propcount = v:GetNetworkedInt("Count.props") or 0 
+		, Propcount = v:GetNetworkedInt("Count.props") or 0
 		} )
 	end
 	table.SortByMember( playerInfo, "Frags" )
@@ -224,7 +227,7 @@ function PLUGIN:HUDDrawScoreBoard()
 	
 	local y = self:DrawPlayers()
 	
-	self.Height = y - self.Y
+	self.Height = y - self.Y + 5
 end
 
 evolve:RegisterPlugin( PLUGIN )
