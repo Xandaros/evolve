@@ -6,6 +6,7 @@ print( "\n=====================================================" )
 print( " Evolve 1.0 by Overv succesfully started serverside." )
 print( "=====================================================\n" )
 
+evolve:LoadSettings() --@DEV: We have to do this here so that we know how to behave elsewhere.
 evolve:LoadPlugins()
 
 // Tell the clients Evolve is installed on the server

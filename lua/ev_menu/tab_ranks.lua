@@ -1,6 +1,7 @@
 /*-------------------------------------------------------------------------------------------------------------------------
 	Tab with rank management
 -------------------------------------------------------------------------------------------------------------------------*/
+require ("player_manager")
 local TAB = {}
 TAB.Title = "Ranks"
 TAB.Description = "Manage ranks."
@@ -50,7 +51,6 @@ function TAB:Initialize( pnl )
 		self.Usergroup:SetText( evolve.ranks[ self.LastRank ].UserGroup or "unknown" )
 		self.Usergroup.Selected = evolve.ranks[ self.LastRank ].UserGroup or "unknown"
 	end
-	
 	// Create the privilege filter
 	self.PrivFilter = vgui.Create( "DComboBox", pnl )
 	self.PrivFilter:SetPos( 0, self.RankList:GetTall() + 84 )
@@ -59,6 +59,7 @@ function TAB:Initialize( pnl )
 	self.PrivFilter:AddChoice( "Weapons" )
 	self.PrivFilter:AddChoice( "Entities" )
 	self.PrivFilter:AddChoice( "Tools" )
+	self.PrivFilter:AddChoice( "Player Models" )
 	self.PrivFilter:ChooseOptionID( 1 )
 	self.PrivFilter.OnSelect = function( id, value, data )
 		self.AllToggle = true
@@ -81,6 +82,7 @@ function TAB:Initialize( pnl )
 		if ( self.PrivFilter.Selected == "Weapons" ) then filter = "@"
 		elseif ( self.PrivFilter.Selected == "Entities" ) then filter = ":"
 		elseif ( self.PrivFilter.Selected == "Tools" ) then filter = "#"
+		elseif ( self.PrivFilter.Selected == "Player Models" ) then filter = "&"
 		end
 		
 		RunConsoleCommand( "ev_setrank", self.RankList:GetSelected()[1].Rank, self.AllToggle and 1 or 0, filter )
@@ -234,7 +236,11 @@ function TAB:PrintNameByClass( class )
 				return wep.PrintName or class
 			end
 		end
-		
+		for mn, pathv in pairs( player_manager.AllValidModels() ) do
+			if ( class == mn ) then
+				return mn
+			end
+		end
 		for c, ent in pairs( scripted_ents.GetList() ) do
 			if ( c == class ) then
 				return ent.t.PrintName or class
@@ -264,10 +270,9 @@ function TAB:UpdatePrivileges()
 	for _, privilege in ipairs( evolve.privileges ) do
 		// Get first character to determine what kind of privilege this is.
 		local prefix = string.Left( privilege, 1 )
-		
-		if ( ( prefix == "@" and self.PrivFilter.Selected == "Weapons" ) or ( prefix == ":" and self.PrivFilter.Selected == "Entities" ) or ( prefix == "#" and self.PrivFilter.Selected == "Tools" ) or ( !string.match( prefix, "[@:#]" ) and ( self.PrivFilter.Selected or "Privileges" ) == "Privileges" ) ) then
+		if ( ( prefix == "@" and self.PrivFilter.Selected == "Weapons" ) or ( prefix == ":" and self.PrivFilter.Selected == "Entities" ) or ( prefix == "#" and self.PrivFilter.Selected == "Tools" ) or ( prefix == "&" and self.PrivFilter.Selected == "Player Models" ) or ( !string.match( prefix, "[@:&#]" ) and ( self.PrivFilter.Selected or "Privileges" ) == "Privileges" ) ) then
 			local line
-			if ( string.match( prefix, "[@:]" ) ) then
+			if ( string.match( prefix, "[@:&]" ) ) then
 				line = self.PrivList:AddLine( self:PrintNameByClass( string.sub( privilege, 2 ) ), "" )
 			else
 				line = self.PrivList:AddLine( privilege, "" )
@@ -278,16 +283,16 @@ function TAB:UpdatePrivileges()
 			line.State:SetImage( "icon16/tick.png" )
 			line.State:SetSize( 16, 16 )
 			line.State:SetPos( self.Width/2 * 0.875 - 12, 1 )
-			
+
 			line.Think = function()
-				if ( line.LastRank != self.RankList:GetSelected()[1].Rank ) then line.LastRank = self.RankList:GetSelected()[1].Rank else return end
-				
-				line.State:SetVisible( line.LastRank == "owner" or table.HasValue( evolve.ranks[ line.LastRank ].Privileges, privilege ) )
+			if ( line.LastRank != self.RankList:GetSelected()[1].Rank ) then line.LastRank = self.RankList:GetSelected()[1].Rank else return end
+
+			line.State:SetVisible( line.LastRank == "owner" or table.HasValue( evolve.ranks[ line.LastRank ].Privileges, privilege ) )
 			end
-			
+
 			line.OnPress = line.OnMousePressed
 			line.LastPress = os.clock()
-			
+
 			line.OnMousePressed = function()
 				if ( line.LastPress + 0.3 > os.clock() and LocalPlayer():EV_HasPrivilege( "Rank modification" ) ) then
 					if ( line.State:IsVisible() ) then
@@ -295,10 +300,10 @@ function TAB:UpdatePrivileges()
 					else
 						RunConsoleCommand( "ev_setrank", line.LastRank, privilege, 1 )
 					end
-					
-					line.State:SetVisible( !line.State:IsVisible() )				
+
+					line.State:SetVisible( !line.State:IsVisible() )	
 				end
-				
+
 				line.LastPress = os.clock()
 				line:OnPress()
 			end

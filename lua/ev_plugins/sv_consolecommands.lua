@@ -22,11 +22,16 @@ function PLUGIN:CCommand( ply, com, cargs )
 	
 	local command = cargs[1]
 	local args = self:GetArguments( cargs )
+	local silentnotify = evolve.SilentNotify or string.Left( command, 1 ) == "@"
+	if(silentnotify) then
+		command = string.sub(command, 2)
+	end
 	
 	evolve:Log( evolve:PlayerLogStr( ply ) .. " ran command '" .. command .. "' with arguments '" .. table.concat( args, " " ) .. "' via console." )
 	
 	for _, plugin in ipairs( evolve.plugins ) do
 		if ( plugin.ChatCommand == command or ( type( plugin.ChatCommand ) == "table" and table.HasValue( plugin.ChatCommand, command ) ) ) then
+			evolve.SilentNotify = silentnotify
 			res, ret = pcall( plugin.Call, plugin, ply, args, string.sub( com, #command + 3 ), command )
 			evolve.SilentNotify = false
 

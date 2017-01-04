@@ -9,5 +9,6 @@ print( "=====================================================\n" )
 net.Receive( "EV_Init", function( length )
 	evolve.installed = true
 	
+	evolve:GetSettings()
 	evolve:LoadPlugins()
 end )

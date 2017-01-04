@@ -67,7 +67,16 @@ local function syncBans()
 	end )
 	evolve:CommitProperties()
 end
-timer.Create( "EV_SourceBansSync", 300, 0, syncBans )
-timer.Simple( 1, syncBans )
+--timer.Create( "EV_SourceBansSync", 300, 0, syncBans )
+--timer.Simple( 1, syncBans )
+
+hook.add("PlayerInitialSpawn", "evolve_banCheck", function(ply)
+	local steamId = ply:SteamID()
+	sourcebans.CheckForBan(steamid, function(result)
+		if result then
+			ply:Kick("You are banned from this server.")
+		end
+	end)
+end)
 
 end
