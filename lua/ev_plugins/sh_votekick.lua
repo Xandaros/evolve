@@ -10,12 +10,26 @@ PLUGIN.Dependencies = {"Vote"}
 PLUGIN.BanTime = 30
 PLUGIN.Cooldown = 30
 
+function IsStaffOnline()
+	for k, v in pairs( player.GetAll() ) do
+		if ( v:EV_HasPrivilege( "Kick" ) and not v:GetNWBool( "EV_AFK" )) then
+	 		return true
+		end
+	end
+	return false
+end
+
 function PLUGIN:Call(ply, args)
 	if not ply:EV_HasPrivilege("Votekick") then
 		evolve:Notify(ply, evolve.colors.red, evolve.constants.notallowed)
 		return
 	end
 	
+	if IsStaffOnline() then
+		evolve:Notify(ply, evolve.colors.red, "You can not votekick because there are active staff online; Try !report instead.")	
+		return
+	end
+
 	if #player.GetAll() <= 2 then
 		evolve:Notify(ply, evolve.colors.red, "There are not enough players to start a votekick")
 		return
