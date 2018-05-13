@@ -139,5 +139,18 @@ function MENU:Hide()
 	end )
 end
 
+function MENU:IsShown()
+	return self.Panel	
+end
+
+function MENU:Toggle() 
+	if (self.IsShown())
+		MENU:Hide()	
+	else
+		MENU:Show()	
+	end
+end
+
 concommand.Add( "+ev_menu", function() MENU:Show() end )
 concommand.Add( "-ev_menu", function() MENU:Hide() end )
+concommand.Add( "ev_menu", function() MENU:Toggle() end )
