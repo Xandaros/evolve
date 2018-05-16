@@ -38,6 +38,8 @@ function MENU:TabSelected( tab )
 end
 
 function MENU:Initialize()
+	self.IsVisible = false
+
 	self.Panel = vgui.Create( "DFrame" )
 	self.Panel:SetSize( 260, 490 )
 	self.Panel:SetPos( -self.Panel:GetWide(), ScrH() / 2 - self.Panel:GetTall() / 2 )
@@ -121,6 +123,7 @@ function MENU:Show()
 			timer.Destroy( "EV_MenuShow" )
 		end
 	end )
+	self.IsVisible = true
 end
 
 function MENU:Hide()
@@ -137,7 +140,17 @@ function MENU:Hide()
 			timer.Destroy( "EV_MenuShow" )
 		end
 	end )
+	self.IsVisible = false
+end
+
+function MENU:Toggle() 
+	if self.IsVisible then
+		self:Hide()	
+	else
+		self:Show()	
+	end
 end
 
 concommand.Add( "+ev_menu", function() MENU:Show() end )
 concommand.Add( "-ev_menu", function() MENU:Hide() end )
+concommand.Add( "ev_menu", function() MENU:Toggle() end )
