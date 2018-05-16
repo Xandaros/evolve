@@ -1,3 +1,11 @@
+
+local IsTTTOverride = false -- Force true if gamemode is not the same name.
+
+local function IsTTT()
+    return IsTTTOverride or gmod.GetGamemode().Name == "Trouble in Terrorist Town" 
+end
+
+if IsTTT then
 local TAB = {}
 TAB.Title = "TTT"
 TAB.Description = "Manage the Terror Town Game mode."
@@ -182,4 +190,5 @@ if SERVER then
             GetConVar(args[1]):SetInt(args[2])
         end
     end)
+end
 end
