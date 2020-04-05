@@ -14,7 +14,7 @@ AddCSLuaFile( "ev_menu/cl_menu.lua" )
 // Load serverside files
 --Load vON
 local von_bak = von
-include( "../../includes/ev_vON/von.lua")
+include( "includes/ev_von/von.lua")
 evolve.von = von
 von = von_bak
 
