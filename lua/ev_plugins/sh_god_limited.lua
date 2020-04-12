@@ -4,22 +4,24 @@
 
 local PLUGIN = {}
 PLUGIN.Title = "Godmode"
-PLUGIN.Description = "Enable godmode for a player."
+PLUGIN.Description = "Enable godmode for one's self."
 PLUGIN.Author = "Overv"
-PLUGIN.ChatCommand = "god"
-PLUGIN.Usage = "[players] [1/0]"
-PLUGIN.Privileges = { "God" }
+PLUGIN.ChatCommand = "sgod"
+PLUGIN.Usage = "[enabled]"
+PLUGIN.Privileges = { "Self God" }
 
 function PLUGIN:Call( ply, args )
-	if ( ply:EV_HasPrivilege( "God" ) ) then
+	if ( ply:EV_HasPrivilege( "Self God" ) ) then
 		local players = {}
 		local enabled = ( tonumber( args[ #args ] ) or 1 ) > 0
 		
-		for _, pl in ipairs( evolve:FindPlayer( args, ply, true ) ) do
-			players[#players+1] = pl
-			
-			if ( enabled ) then pl:GodEnable() else pl:GodDisable() end
-			pl.EV_GodMode = enabled
+		for _, pl in ipairs( evolve:FindPlayer( ply:Nick(), ply, true ) ) do
+			if ply:EV_IsAdmin() or ply:EV_GetRank() ~= pl:EV_GetRank() or ply == pl then
+				players[#players+1] = pl
+				
+				if ( enabled ) then pl:GodEnable() else pl:GodDisable() end
+				pl.EV_GodMode = enabled
+			end
 		end
 				
 		if ( #players > 0 ) then
@@ -43,7 +45,7 @@ end
 function PLUGIN:Menu( arg, players )
 	if ( arg ) then
 		table.insert( players, arg )
-		RunConsoleCommand( "ev", "god", unpack( players ) )
+		RunConsoleCommand( "ev", "sgod", unpack( players ) )
 	else
 		return "Godmode", evolve.category.actions, { { "Enable", 1 }, { "Disable", 0 } }
 	end

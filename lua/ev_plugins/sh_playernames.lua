@@ -46,54 +46,56 @@ else
 			if ( pl != LocalPlayer() and pl:Health() > 0 ) then
 				local visible = hook.Call( "EV_ShowPlayerName", nil, pl )
 				
-				if ( visible != false ) then				
-					local td = {}
-					td.start = LocalPlayer():GetShootPos()
-					td.endpos = pl:GetShootPos()
-					local trace = util.TraceLine( td )
-					
-					if ( !trace.HitWorld ) then				
-						surface.SetFont( "DefaultBold" )
-						local w = surface.GetTextSize( pl:Nick():gsub( "&","--" ) ) + 32
-						local h = 24
+				if ( visible != false ) then	
+					if ( LocalPlayer():EV_HasPrivilege( "Player names" ) ) then
+						local td = {}
+						td.start = LocalPlayer():GetShootPos()
+						td.endpos = pl:GetShootPos()
+						local trace = util.TraceLine( td )
 						
-						local pos = pl:GetShootPos()
-						local bone = pl:LookupBone( "ValveBiped.Bip01_Head1" )
-						if ( bone ) then
-							pos = pl:GetBonePosition( bone )
-						end						
-						
-						local drawPos = pl:GetShootPos():ToScreen()
-						local distance = LocalPlayer():GetShootPos():Distance( pos )
-						drawPos.x = drawPos.x - w / 2
-						drawPos.y = drawPos.y - h - 25
-						
-						local alpha = 255
-						if ( distance > 512 ) then
-							alpha = 255 - math.Clamp( ( distance - 512 ) / ( 2048 - 512 ) * 255, 0, 255 )
+						if ( !trace.HitWorld ) then				
+							surface.SetFont( "DefaultBold" )
+							local w = surface.GetTextSize( pl:Nick():gsub( "&","--" ) ) + 32
+							local h = 24
+							
+							local pos = pl:GetShootPos()
+							local bone = pl:LookupBone( "ValveBiped.Bip01_Head1" )
+							if ( bone ) then
+								pos = pl:GetBonePosition( bone )
+							end						
+							
+							local drawPos = pl:GetShootPos():ToScreen()
+							local distance = LocalPlayer():GetShootPos():Distance( pos )
+							drawPos.x = drawPos.x - w / 2
+							drawPos.y = drawPos.y - h - 25
+							
+							local alpha = 255
+							if ( distance > 512 ) then
+								alpha = 255 - math.Clamp( ( distance - 512 ) / ( 2048 - 512 ) * 255, 0, 255 )
+							end
+							
+							surface.SetDrawColor( 62, 62, 62, alpha )
+							surface.DrawRect( drawPos.x, drawPos.y, w, h )
+							surface.SetDrawColor( 129, 129, 129, alpha )
+							surface.DrawOutlinedRect( drawPos.x, drawPos.y, w, h )
+							
+							if ( pl:GetNWBool( "EV_Chatting", false ) ) then
+								surface.SetMaterial( self.iconChat )
+							elseif ( pl:GetNWBool( "EV_AFK", false ) ) then
+								surface.SetMaterial( self.iconAFK )
+							elseif ( evolve.ranks[ pl:EV_GetRank() ] ) then
+								surface.SetMaterial( evolve.ranks[ pl:EV_GetRank() ].IconTexture )
+							else
+								surface.SetMaterial( self.iconUser )
+							end
+							
+							surface.SetDrawColor( 255, 255, 255, math.Clamp( alpha * 2, 0, 255 ) )
+							surface.DrawTexturedRect( drawPos.x + 5, drawPos.y + 5, 14, 14 )
+							
+							local col = evolve.ranks[ pl:EV_GetRank() ].Color or team.GetColor( pl:Team() )
+							col.a = math.Clamp( alpha * 2, 0, 255 )
+							draw.DrawText( pl:Nick(), "DefaultBold", drawPos.x + 28, drawPos.y + 5, col, 0 )
 						end
-						
-						surface.SetDrawColor( 62, 62, 62, alpha )
-						surface.DrawRect( drawPos.x, drawPos.y, w, h )
-						surface.SetDrawColor( 129, 129, 129, alpha )
-						surface.DrawOutlinedRect( drawPos.x, drawPos.y, w, h )
-						
-						if ( pl:GetNWBool( "EV_Chatting", false ) ) then
-							surface.SetMaterial( self.iconChat )
-						elseif ( pl:GetNWBool( "EV_AFK", false ) ) then
-							surface.SetMaterial( self.iconAFK )
-						elseif ( evolve.ranks[ pl:EV_GetRank() ] ) then
-							surface.SetMaterial( evolve.ranks[ pl:EV_GetRank() ].IconTexture )
-						else
-							surface.SetMaterial( self.iconUser )
-						end
-						
-						surface.SetDrawColor( 255, 255, 255, math.Clamp( alpha * 2, 0, 255 ) )
-						surface.DrawTexturedRect( drawPos.x + 5, drawPos.y + 5, 14, 14 )
-						
-						local col = evolve.ranks[ pl:EV_GetRank() ].Color or team.GetColor( pl:Team() )
-						col.a = math.Clamp( alpha * 2, 0, 255 )
-						draw.DrawText( pl:Nick(), "DefaultBold", drawPos.x + 28, drawPos.y + 5, col, 0 )
 					end
 				end
 			end

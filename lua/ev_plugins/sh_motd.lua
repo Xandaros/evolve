@@ -1,101 +1,178 @@
-/*-------------------------------------------------------------------------------------------------------------------------
-	Message of the Day
--------------------------------------------------------------------------------------------------------------------------*/
+-- Remember to create the ev_motd.txt in the data folder and add the contents!!
 
 local PLUGIN = {}
-PLUGIN.Title = "MOTD"
-PLUGIN.Description = "Message of the Day."
-PLUGIN.Author = "Divran"
+PLUGIN.Title = "MOTD2"
+PLUGIN.Description = "Better MOTD"
+PLUGIN.Author = "Grey"
 PLUGIN.ChatCommand = "motd"
 PLUGIN.Usage = nil
-PLUGIN.Privileges = nil
+PLUGIN.Privileges = { "Skip MOTD" }
+MOTD_ENABLED = true;
+MOTD_ACCEPT_WAIT = 5;
+MOTD_DECLINE_CONFIRMATION = true;
+_window = nil
 
-function PLUGIN:Call(ply, args)
-	self:OpenMotd(ply)
+if SERVER then
+	util.AddNetworkString( "MOTD2Packet" )
+else
+	ReceivedMOTD = false
+end
+function PLUGIN:Call( ply, args )
+	self:OpenMotd2( ply )
+
 end
 
-function PLUGIN:PlayerInitialSpawn(ply)
-	timer.Simple(1, function() ply:ConCommand("evolve_startmotd") end)
+function MOTDPlayerInitialSpawn( ply )
+	if (file.Exists("evolve_motd/ev_motd.txt", "DATA")) then
+		timer.Create("MOTD2TimerFor"..ply:Nick(),3,3,function() 
+		net.Start( "MOTD2Packet" )
+		local tmpstr = file.Read("evolve_motd/ev_motd.txt", "DATA")
+		if tmpstr then
+			net.WriteString( tmpstr )
+		else
+			net.WriteString( "Bad MOTD" )
+		end
+		net.Send( ply)
+		end)
+	else 
+		Msg("\n")
+		Msg("====================== \n")
+		Msg("Missing MOTD file! \n")
+		Msg("Make sure the file exists as: ev_motd.txt in data/evolve_motd/! \n")
+		Msg("====================== \n")
+		Msg("\n")
+	end
+	--timer.Simple( 7, function() ply:ConCommand("ev_motd2") end)
 end
-
-function PLUGIN:OpenMotd(ply)
+if SERVER then
+	hook.Add("PlayerInitialSpawn", "playerInitialSpawn", MOTDPlayerInitialSpawn)
+end
+function PLUGIN:OpenMotd2( ply )
 	if (SERVER) then
-		ply:ConCommand("evolve_motd")
+		ply:ConCommand("ev_motd2")
+	else
+		LocalPlayer():ConCommand("ev_motd2")
 	end
 end
-
 if (SERVER) then 
-	if file.Exists("evolvemotd.txt", "DATA") then
-		resource.AddFile("data/evolvemotd.txt")
-	end
-
-	for k,v in pairs(player.GetAll()) do
-		v:ConCommand("evolve_startmotd")
+	if (file.Exists("evolve_motd/ev_motd.txt", "DATA")) then
+		print("Received Valid MOTD2")
+	else
+		Msg("\n")
+		Msg("====================== \n")
+		Msg("Missing MOTD file! \n")
+		Msg("Make sure the file exists as: ev_motd.txt in data/evolve_motd/! \n")
+		Msg("====================== \n")
+		Msg("\n")
 	end
 end
 
 
 if (CLIENT) then
-	function PLUGIN:CreateMenu()
-		self.StartPanel = vgui.Create("DFrame")
-		local w,h = 150,50
-		self.StartPanel:Center()
-		self.StartPanel:SetSize(w, h)
-		self.StartPanel:SetTitle("Welcome!")
-		self.StartPanel:SetVisible(false)
-		self.StartPanel:SetDraggable(true)
-		self.StartPanel:ShowCloseButton(false)
-		self.StartPanel:SetDeleteOnClose(false)
-		self.StartPanel:SetScreenLock(true)
-		self.StartPanel:MakePopup()
-		
-		self.OpenButton = vgui.Create("DButton", self.StartPanel)
-		self.OpenButton:SetSize(150 / 2 - 4, 20)
-		self.OpenButton:SetPos(2, 25)
-		self.OpenButton:SetText("Open MOTD")
-		self.OpenButton.DoClick = function()
-			PLUGIN.MotdPanel:SetVisible(true)
-			PLUGIN.StartPanel:SetVisible(false) 
+	net.Receive( "MOTD2Packet" , function( length )
+		local motdstr = net.ReadString()
+		if (ReceivedMOTD == true) then
+		return;
 		end
-		
-		self.CloseButton = vgui.Create("DButton",self.StartPanel)
-		self.CloseButton:SetSize(150 / 2 - 6, 20)
-		self.CloseButton:SetPos(150 / 2 + 4, 25)
-		self.CloseButton:SetText("Close")
-		self.CloseButton.DoClick = function() 
-			PLUGIN.StartPanel:SetVisible(false) 
+		ReceivedMOTD = true
+		local MOTD_HTML = ""
+		if (tonumber(length)>0) then
+			MOTD_HTML = motdstr
+			print("Valid MOTD Received in MOTD2 Plugin")
+		else
+			print("No MOTD Given.")
+			MOTD_HTML = ""
 		end
-		
-		self.MotdPanel = vgui.Create("DFrame")
-		local w,h = ScrW() - 200,ScrH() - 200
-		self.MotdPanel:SetPos(100, 100)
-		self.MotdPanel:SetSize(w, h)
-		self.MotdPanel:SetTitle("MOTD")
-		self.MotdPanel:SetVisible(false)
-		self.MotdPanel:SetDraggable(false)
-		self.MotdPanel:ShowCloseButton(true)
-		self.MotdPanel:SetDeleteOnClose(false)
-		self.MotdPanel:SetScreenLock(true)
-		self.MotdPanel:MakePopup()
-		
-		self.MotdBox = vgui.Create("HTML", self.MotdPanel)
-		self.MotdBox:StretchToParent(4, 25, 4, 4)
-		self.MotdBox:SetHTML(file.Read("evolvemotd.txt"))
+		if ( !MOTD_ENABLED ) then return; end
+			local _w = ScrW( );
+			local _h = ScrH( );
+
+			_window = vgui.Create( "DPanel" );
+			local _html = vgui.Create( "HTML", _window );
+
+			local _accept = vgui.Create( "DButton", _window );
+			_accept:SetText( "#Accept " .. " ( " .. MOTD_ACCEPT_WAIT .. " ) " )
+			_accept:SetWide( _accept:GetWide( ) * 1.5 )
+			_accept:SetTooltip( "I agree to the terms and conditions." )
+			_accept.DoClick = function()
+				print("Accepted MOTD")
+				_window:ClosePanel( );
+			end
+
+			local _decline = vgui.Create( "DButton", _window );
+			_decline:SetText( "#Decline" )
+			_decline:SetWide( _decline:GetWide( ) * 1.5 )
+			_decline:SetTooltip( "I do not agree to the terms and conditions and I agree to remove any and all content and associated files of this game-mode from my PC." )
+			_decline.DoClick = function()
+				RunConsoleCommand( "disconnect" );
+			end
+			
+			//
+			// Hack to fix ClosePanel
+			//
+			_window.ClosePanel = function( )
+				--_decline:Remove( );
+				--_decline = nil;
+				--_accept:Remove( );
+				--_accept = nil;
+				--_html:Remove( );
+				--_html = nil;
+				_window:SetVisible( false );
+				--_window:Remove( );
+				--_window = nil;
+			end
+
+
+			_window:SetSize( _w - _w / 3, _h - _h / 3 );
+			_window:Center( );
+			-- _window:SetPos( _w / 2, -_h )
+			-- _window:MoveTo( _w / 2, _h / 4, 1 );
+
+			_html:SetPos( 0, 0 );
+			_html:SetSize( _window:GetWide( ), _window:GetTall( ) - 30 )
+
+			_accept:SetPos( ( _window:GetWide( ) / 2 ) - _accept:GetWide( ), _window:GetTall( ) - 25 );
+			_decline:SetPos( ( _window:GetWide( ) / 2 ) + _decline:GetWide( ), _window:GetTall( ) - 25 );
+
+			_html:SetHTML( MOTD_HTML );
+			
+			if ( MOTD_ACCEPT_WAIT && MOTD_ACCEPT_WAIT > 0 ) then
+				_accept:SetDisabled( true );
+				for i = 1, MOTD_ACCEPT_WAIT do
+					timer.Simple( i, function( )
+						if ( MOTD_ACCEPT_WAIT - i == 0 ) then
+							_accept:SetText( "#Accept" )
+						else
+							_accept:SetText( "#Accept" .. " ( " .. MOTD_ACCEPT_WAIT - i .. " ) " )
+						end
+					end )
+				end
+				timer.Simple( MOTD_ACCEPT_WAIT, function( )
+					_accept:SetDisabled( false );
+				end )
+			end
+			_window:SetVisible( true );
+			_window:MakePopup( );
+			if LocalPlayer():EV_HasPrivilege( "Skip MOTD" ) then
+				_window:ClosePanel( )
+			end
+
+	end)
+	concommand.Add("ev_motd2",function(ply,cmd,args)
+	if _window then
+		_window:SetVisible( true )
 	end
-	
-	concommand.Add("evolve_motd", function(ply,cmd,args)
-		if file.Exists("evolvemotd.txt", "DATA") then
-			PLUGIN.MotdPanel:SetVisible(true)
-		end
 	end)
-	
-	concommand.Add("evolve_startmotd", function(ply,cmd,args)
-		if file.Exists("evolvemotd.txt", "DATA") then
-			if not PLUGIN.StartPanel then PLUGIN:CreateMenu() end
-			PLUGIN.StartPanel:SetVisible(true)
-		end
-	end)
-	
+	function MOTDHook()
+		ply2=LocalPlayer()
+		ply2:ConCommand("ev_motd2")
+	end
+	hook.Add( "MOTD", "MOTD", MOTDHook)
+	concommand.Add( "motd", function( ) hook.Call( "MOTD", GAMEMODE ); end );
+	concommand.Add( "rules", function( ) hook.Call( "MOTD", GAMEMODE ); end );
+	concommand.Add( "tos", function( ) hook.Call( "MOTD", GAMEMODE ); end );
+	concommand.Add( "eula", function( ) hook.Call( "MOTD", GAMEMODE ); end );
+	concommand.Add( "terms", function( ) hook.Call( "MOTD", GAMEMODE ); end );
 end
 
-evolve:RegisterPlugin(PLUGIN)
+evolve:RegisterPlugin( PLUGIN )
