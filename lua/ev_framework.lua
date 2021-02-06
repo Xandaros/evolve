@@ -486,7 +486,7 @@ function evolve:CommitProperties()
 		table.SortByMember( info, "LastJoin", function(a, b) return a > b end )
 		
 		for _, entry in pairs( info ) do
-			if ( ( !entry.BanEnd or entry.BanEnd < os.time() ) and ( !entry.Rank or entry.Rank == "guest" ) ) then
+			if ( ( !entry.BanEnd or (entry.BanEnd != 0 and entry.BanEnd < os.time()) ) and ( !entry.Rank or entry.Rank == "guest" ) ) then
 				evolve.PlayerInfo[ entry.UID ] = nil
 				count = count - 1
 				if ( count < 800 ) then break end
