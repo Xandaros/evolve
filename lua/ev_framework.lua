@@ -481,7 +481,7 @@ function evolve:CommitProperties()
 		local original = count
 		local info = {}
 		for uid, entry in pairs( evolve.PlayerInfo ) do
-			table.insert( info, { UID = uid, LastJoin = entry.LastJoin, Rank = entry.Rank } )
+			table.insert( info, { UID = uid, LastJoin = entry.LastJoin, Rank = entry.Rank, BanEnd = entry.BanEnd } )
 		end
 		table.SortByMember( info, "LastJoin", function(a, b) return a > b end )
 		
