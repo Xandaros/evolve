@@ -481,12 +481,12 @@ function evolve:CommitProperties()
 		local original = count
 		local info = {}
 		for uid, entry in pairs( evolve.PlayerInfo ) do
-			table.insert( info, { UID = uid, LastJoin = entry.LastJoin, Rank = entry.Rank } )
+			table.insert( info, { UID = uid, LastJoin = entry.LastJoin, Rank = entry.Rank, BanEnd = entry.BanEnd } )
 		end
 		table.SortByMember( info, "LastJoin", function(a, b) return a > b end )
 		
 		for _, entry in pairs( info ) do
-			if ( ( !entry.BanEnd or entry.BanEnd < os.time() ) and ( !entry.Rank or entry.Rank == "guest" ) ) then
+			if ( ( !entry.BanEnd or (entry.BanEnd != 0 and entry.BanEnd < os.time()) ) and ( !entry.Rank or entry.Rank == "guest" ) ) then
 				evolve.PlayerInfo[ entry.UID ] = nil
 				count = count - 1
 				if ( count < 800 ) then break end
