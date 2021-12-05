@@ -72,7 +72,8 @@ function PLUGIN:Call( ply, args )
 end
 
 if ( SERVER ) then
-	function PLUGIN:InitPostEntity()
+	function PLUGIN:Initialize()
+		evolve:Message( "== Executing Ban List ==" )
 		for uid, data in pairs( evolve.PlayerInfo ) do
 			if ( evolve:IsBanned( uid ) ) then
 				game.ConsoleCommand( "banid " .. ( data.BanEnd - os.time() ) / 60 .. " " .. data.SteamID .. "\n" )
