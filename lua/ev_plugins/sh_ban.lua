@@ -72,12 +72,19 @@ function PLUGIN:Call( ply, args )
 end
 
 if ( SERVER ) then
-	function PLUGIN:Initialize()
-		evolve:Message( "== Executing Ban List ==" )
-		for uid, data in pairs( evolve.PlayerInfo ) do
+	function PLUGIN:CheckPassword( steamID64 )
+		local steamID = util.SteamIDFrom64( steamID64 )
+		local uid = evolve:UniqueIDByProperty( "SteamID", steamID )
+		
+		if ( uid ) then
+			evolve:Message( "Checking Ban List For " .. evolve:GetProperty( uid, "Nick" ) .. " (" .. evolve:GetProperty( uid, "SteamID" ) .. ")" )
+			
 			if ( evolve:IsBanned( uid ) ) then
-				game.ConsoleCommand( "banid " .. ( data.BanEnd - os.time() ) / 60 .. " " .. data.SteamID .. "\n" )
+				game.ConsoleCommand( "banid " .. ( evolve:GetProperty( uid, "BanEnd" ) - os.time() ) / 60 .. " " .. evolve:GetProperty( uid, "SteamID" ) .. "\n" )
+				evolve:Message( evolve:GetProperty( uid, "Nick" ) .. " (" .. evolve:GetProperty( uid, "SteamID" ) .. ") is banned." )
 			end
+		else
+			evolve:Message( "Player " .. steamID .. " was not found in ban data." )
 		end
 	end
 end
