@@ -56,7 +56,7 @@ function PLUGIN:Menu( arg, players )
 	if ( arg ) then
 		RunConsoleCommand( "ev", "kick", players[1], arg )
 	else
-		return "Kick", evolve.category.administration, { "No reason", "Spammer", "Asshole", "Mingebag", "Retard", "Continued despite warning" }, "Reason"
+		return "Kick", evolve.category.administration, { "No reason", "Spammer", "Asshole", "Mingebag", "Continued despite warning" }, "Reason"
 	end
 end
 
