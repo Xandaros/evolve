@@ -102,6 +102,7 @@ hook.Add( "EV_RankPrivilegeChange", "EV_MenuPrivUpdate", function( rank, privile
 	end
 end )
 
+local topPerc = 0.32
 function MENU:Show()
 	if ( !LocalPlayer():EV_HasPrivilege( "Menu" ) ) then return end
 	if ( !self.Panel ) then MENU:Initialize() end
@@ -114,10 +115,11 @@ function MENU:Show()
 	self.Panel:SetKeyboardInputEnabled( false )
 	self.Panel:SetMouseInputEnabled( true )
 	
-	input.SetCursorPos( 50 + self.Panel:GetWide() / 2, ScrH() / 2 )
+
+	input.SetCursorPos( 50 + self.Panel:GetWide() / 2, ScrH() * topPerc )
 	
 	timer.Create( "EV_MenuShow", 1/60, 0, function()
-		self.Panel:SetPos( self.Panel:GetPos() + ( 110 - self.Panel:GetPos() ) / 7, ScrH() / 2 - self.Panel:GetTall() / 2 )
+		self.Panel:SetPos( self.Panel:GetPos() + ( 110 - self.Panel:GetPos() ) / 7, (ScrH() * topPerc) - self.Panel:GetTall() / 2 )
 		
 		if ( self.Panel:GetPos() > 50 ) then
 			timer.Destroy( "EV_MenuShow" )
@@ -133,7 +135,7 @@ function MENU:Hide()
 	self.Panel:SetMouseInputEnabled( false )
 	
 	timer.Create( "EV_MenuShow", 1/60, 0, function()
-		self.Panel:SetPos( self.Panel:GetPos() - ( self.Panel:GetPos() + self.Panel:GetWide() + 10 ) / 5, ScrH() / 2 - self.Panel:GetTall() / 2 )
+		self.Panel:SetPos( self.Panel:GetPos() - ( self.Panel:GetPos() + self.Panel:GetWide() + 10 ) / 5, (ScrH() * topPerc) - self.Panel:GetTall() / 2 )
 		
 		if ( self.Panel:GetPos() < -self.Panel:GetWide() ) then
 			self.Panel:SetVisible( false )
