@@ -33,26 +33,32 @@ if (SERVER) then
     PLUGIN:GetMaps()
        
     util.AddNetworkString("ev_sendmaps")
+    util.AddNetworkString("ev_requestmaps")
 
-    function PLUGIN:PlayerInitialSpawn( ply )
+    function PLUGIN:sendMaps( ply )
         if IsValid(ply) then
-        net.Start( "ev_sendmaps" )
-            net.WriteTable( self.Maps )
-            net.WriteTable( self.Gamemodes )
-        net.Send( ply )
+            net.Start( "ev_sendmaps" )
+                net.WriteTable( self.Maps )
+                net.WriteTable( self.Gamemodes )
+            net.Send( ply )
         end
     end
-            concommand.Add( "ev_changemapandgamemode", function( ply, command, args )
-            if ( ply:EV_HasPrivilege("Map changing") ) then
-                local mapc = args[1]
-                local gamemodec = args[2]
-                evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has changed the map to ", evolve.colors.red, mapc, evolve.colors.white, " and gamemode to ", evolve.colors.red, gamemodec, evolve.colors.white, "." )
-                timer.Simple( 0.5, function() RunConsoleCommand("gamemode", gamemodec) end)
-                timer.Simple( 0.55, function() RunConsoleCommand("changelevel", mapc) end)
-            else
-                evolve:Notify( ply, evolve.colors.red, evolve.constants.notallowed )
-            end
-        end)
+    
+    net.Receive("ev_requestmaps", function( len, ply )
+        PLUGIN:sendMaps( ply )
+    end)
+
+    concommand.Add( "ev_changemapandgamemode", function( ply, command, args )
+        if ( ply:EV_HasPrivilege("Map changing") ) then
+            local mapc = args[1]
+            local gamemodec = args[2]
+            evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has changed the map to ", evolve.colors.red, mapc, evolve.colors.white, " and gamemode to ", evolve.colors.red, gamemodec, evolve.colors.white, "." )
+            timer.Simple( 0.5, function() RunConsoleCommand("gamemode", gamemodec) end)
+            timer.Simple( 0.55, function() RunConsoleCommand("changelevel", mapc) end)
+        else
+            evolve:Notify( ply, evolve.colors.red, evolve.constants.notallowed )
+        end
+    end)
 else
     function PLUGIN.RecieveMaps( len )
         PLUGIN.Maps = net.ReadTable()
@@ -69,6 +75,10 @@ function evolve:MapPlugin_GetGamemodes()
     return PLUGIN.Gamemodes, PLUGIN.Gamemodes_Inverted
 end
        
+function evolve:MapPlugin_RequestMaps()
+    net.Start( "ev_requestmaps" )
+    net.SendToServer()
+end
 
 evolve:RegisterPlugin( PLUGIN )
 
