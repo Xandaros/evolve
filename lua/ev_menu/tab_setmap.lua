@@ -51,14 +51,14 @@ function TAB:Initialize( pnl )
     self.MapList:SetSize( w / 2 - 2, h - 58 )
     self.MapList:SetMultiSelect( false )
     self.MapList:AddColumn("Maps")
-    local maps = TAB:RenderMaps()
+    TAB:RenderMaps()
 
     self.GamemodeList = vgui.Create("DListView", pnl)
     self.GamemodeList:SetPos( w / 2 + 2, 2 )
     self.GamemodeList:SetSize( w / 2 - 4, h - 58 )
     self.GamemodeList:SetMultiSelect( false )
     self.GamemodeList:AddColumn("Gamemodes")
-    local gamemodes = TAB:RenderGameModes()
+    TAB:RenderGameModes()
 
     self.BothButton = vgui.Create("DButton", pnl )
     self.BothButton:SetWide( w / 3 - 2 )
@@ -98,22 +98,32 @@ function TAB:Initialize( pnl )
         surface.SetDrawColor( 46, 46, 46, 255 )
         surface.DrawRect( 0, 0, self.Block:GetWide(), self.Block:GetTall() )
            
-        draw.SimpleText( "You need the Maps List Plugin ('sh_mapslist.lua') for this tab to work.", "ScoreboardText", self.Block:GetWide() / 2, self.Block:GetTall() / 2 - 20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
+        draw.SimpleText( "Waiting on map list..", "ScoreboardText", self.Block:GetWide() / 2, self.Block:GetTall() / 2 - 20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
+        draw.SimpleText( "You need the Maps List Plugin ('sh_mapslist.lua') for this tab to work. ", "ScoreboardText", self.Block:GetWide() / 2, self.Block:GetTall() / 2 , Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
+        draw.SimpleText( "If you have the plugin, please wait a few seconds.", "ScoreboardText", self.Block:GetWide() / 2, self.Block:GetTall() / 2 + 10, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
     end
-       
-    if ( table.Count(maps) ) then self.Block:SetPos( self.Block:GetWide(), 0 ) end
+
+    timer.Create("mapCheckTimer", 2, 0, function()
+        if(table.IsEmpty(maps))then
+            evolve:MapPlugin_RequestMaps()
+            timer.Simple(1, function()
+                self.MapList:Clear()
+                TAB:RenderMaps()
+        
+                self.GamemodeList:Clear()
+                TAB:RenderGameModes()
+            end)
+        else
+            self.Block:SetPos( self.Block:GetWide(), 0 )
+            timer.Remove("mapCheckTimer")
+        end
+        
+    end)
 end
 
+
+
 function TAB:Update()
-    if(table.Count(maps) < 1)then
-        evolve:MapPlugin_RequestMaps()
-
-        self.MapList:Clear()
-        TAB:RenderMaps()
-
-        self.GamemodeList:Clear()
-        TAB:RenderGameModes()
-    end
 end
 
 evolve:RegisterTab( TAB )
