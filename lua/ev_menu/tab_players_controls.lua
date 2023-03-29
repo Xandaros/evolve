@@ -141,7 +141,10 @@ function PANEL:Populate()
 			if ( item.LastClick and os.clock() < item.LastClick + 0.3 and item.LastX == gui.MouseX() and item.LastY == gui.MouseY() ) then
 				self:MoveTo( -self.Parent.Width, 0, 0.1 )
 				self.Parent.PluginList:MoveTo( 0, 0, 0.1 )
-				self.Parent.ButPlugins:SetButtonText( "Players" )
+				self.Parent.ButPlugins:SetButtonText( "Cancel" )
+
+				self.Parent.ButPlugins:SetEnabled( true )
+				self.Parent.ButPlugins:AlphaTo(255, 0)
 			end
 			
 			item.LastClick = os.clock()
@@ -266,9 +269,11 @@ function PANEL:PopulateSubmenu( plugin, submenu, title )
 		button.OnSelect = function()
 			RunConsoleCommand( "ev", plugin.ChatCommand, unpack( self:GetParent().Tab.PlayerList:GetSelectedPlayers() ), value[2] )
 			
-			self:GetParent().Tab.PlayerList:MoveTo( 0, 0, 0.2 )
-			self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide(), 0, 0.2 )
-			self:GetParent().Tab.ButPlugins:SetButtonText( "Plugins" )
+			self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide()/2, 0, 0.2 )
+			self:GetParent().Tab.ButPlugins:SetButtonText( "" )
+
+			self:GetParent().Tab.ButPlugins:SetEnabled( false )
+			self:GetParent().Tab.ButPlugins:AlphaTo(0, 0)
 			self:Reset()
 		end
 		
@@ -282,15 +287,20 @@ function PANEL:OpenPluginMenu( plugin )
 	
 	if ( submenu ) then
 		self:PopulateSubmenu( plugin, submenu, submenutitle )
-		
+		self:GetParent().Tab.ButPlugins:SetButtonText( "Cancel" )
+
+		self:GetParent().Tab.ButPlugins:SetEnabled( true )
+		self:GetParent().Tab.ButPlugins:AlphaTo(255, 0)
+
 		self.PluginContainer:MoveTo( -self:GetWide(), 0, 0.2 )
 		self.Submenu[1]:MoveTo( 1, 1, 0.2 )
 	else
 		RunConsoleCommand( "ev", plugin.ChatCommand, unpack( self:GetParent().Tab.PlayerList:GetSelectedPlayers() ) )
 		
-		self:GetParent().Tab.PlayerList:MoveTo( 0, 0, 0.2 )
-		self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide(), 0, 0.2 )
-		self:GetParent().Tab.ButPlugins:SetButtonText( "Plugins" )
+		self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide()/2, 0, 0.2 )
+		self:GetParent().Tab.ButPlugins:SetButtonText( "" )
+		self:GetParent().Tab.ButPlugins:SetEnabled( false )
+		self:GetParent().Tab.ButPlugins:AlphaTo(0, 0)
 	end
 end
 
