@@ -344,13 +344,13 @@ function PANEL:CreatePluginsPage()
 	local catNames = { "Administration", "Actions", "Punishment", "Teleportation" }
 	self.Categories = {}
 	
-	for i = 1, 4 do
+	for i = 1, #catNames do
 		self.Categories[i] = vgui.Create( "DCollapsibleCategory", self.PluginContainer )
 		self.Categories[i]:SetTall( 22 )
 		self.Categories[i]:SetExpanded( 0 )
 		self.Categories[i]:SetLabel( catNames[i] )
 		self.Categories[i].Header.OnMousePressed = function()
-			for ii = 1, 4 do
+			for ii = 1, #catNames do
 				if ( self.Categories[ii]:GetExpanded() ) then self.Categories[ii]:Toggle() end
 			end
 			self.Categories[i]:SetExpanded( false )
