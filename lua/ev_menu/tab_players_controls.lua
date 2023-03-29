@@ -300,7 +300,7 @@ function PANEL:AddButton( plugin, cat, highlight )
 	local button = vgui.Create( "ToolMenuButton" )
 	button.title, button.category, button.submenu, button.submenutitle = plugin:Menu()
 	
-	if ( button.category != cat ) then button:RemoveEx() return highlight end
+	if ( button.category.id != cat ) then button:RemoveEx() return highlight end
 	
 	button.plugin = plugin
 	button.m_bAlt = highlight
@@ -310,7 +310,10 @@ function PANEL:AddButton( plugin, cat, highlight )
 		self:OpenPluginMenu( plugin )
 	end
 	
-	self.Categories[ button.category ].Container:AddItem( button )
+	if(self.Categories[ button.category.id ] ~= nil) then
+		self.Categories[ button.category.id ].Container:AddItem( button )
+	end
+	
 	table.insert( self.Buttons, button )
 	
 	return !highlight
@@ -341,40 +344,41 @@ function PANEL:CreatePluginsPage()
 	self.PluginContainer:SetPadding( 1 )
 	self.PluginContainer:SetSpacing( 1 )
 	
-	local catNames = { "Administration", "Actions", "Punishment", "Teleportation" }
 	self.Categories = {}
-	
-	for i = 1, #catNames do
-		self.Categories[i] = vgui.Create( "DCollapsibleCategory", self.PluginContainer )
-		self.Categories[i]:SetTall( 22 )
-		self.Categories[i]:SetExpanded( 0 )
-		self.Categories[i]:SetLabel( catNames[i] )
-		self.Categories[i].Header.OnMousePressed = function()
-			for ii = 1, #catNames do
-				if ( self.Categories[ii]:GetExpanded() ) then self.Categories[ii]:Toggle() end
+	for key,cat in pairs(evolve.category) do 
+		local categoryGui = vgui.Create( "DCollapsibleCategory", self.PluginContainer )
+		categoryGui:SetTall( 22 )
+		categoryGui:SetExpanded( 0 )
+		categoryGui:SetLabel( cat.label )
+		categoryGui.Header.OnMousePressed = function()
+			for _,cat in pairs(self.Categories) do
+				if ( cat:GetExpanded() ) then cat:Toggle() end
 			end
-			self.Categories[i]:SetExpanded( false )
-			self.Categories[i]:Toggle()
+			categoryGui:SetExpanded( false )
+			categoryGui:Toggle()
 		end
 		
-		self.Categories[i].Container = vgui.Create( "DPanelList", self.Categories[i] )
-		self.Categories[i].Container:SetAutoSize( true )
-		self.Categories[i].Container:SetSpacing( 0 )
-		self.Categories[i].Container:EnableHorizontal( false )
-		self.Categories[i].Container:EnableVerticalScrollbar( true )
-		self.Categories[i]:SetContents( self.Categories[i].Container )
+		categoryGui.Container = vgui.Create( "DPanelList", categoryGui )
+		categoryGui.Container:SetAutoSize( true )
+		categoryGui.Container:SetSpacing( 0 )
+		categoryGui.Container:EnableHorizontal( false )
+		categoryGui.Container:EnableVerticalScrollbar( true )
+		categoryGui:SetContents( categoryGui.Container )
 		
+		self.Categories[cat.id]=categoryGui
+		self.PluginContainer:AddItem( categoryGui )
+
 		local highlight = true
 		for _, v in pairs( evolve.plugins ) do
-			highlight = self:AddButton( v, i, highlight )
+			highlight = self:AddButton( v, cat.id, highlight )
 		end
-		
-		self.PluginContainer:AddItem( self.Categories[i] )
+
+
 	end
 	
 	self:CreateSubmenu()
 	
-	self.Categories[2].Header.OnMousePressed()
+	self.Categories[evolve.category.actions.id].Header.OnMousePressed()
 end
 
 derma.DefineControl( "EvolvePluginList", "Plugin list", PANEL, "DPanelList" )
