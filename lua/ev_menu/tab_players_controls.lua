@@ -176,6 +176,7 @@ function PANEL:Init()
         self:SetContentAlignment( 4 )
         self:SetTextInset( 5, 0 )
         self:SetTall( 15 )
+
         table.insert( ToolButtons, self )
 end
 
@@ -227,6 +228,18 @@ function PANEL:AddCheckBox( strConVar )
 	end
        
 	self.Checkbox:SetConVar( strConVar )
+	self:InvalidateLayout()
+end
+
+function PANEL:AddSubmenuIndicator()
+	if ( !self.SubmenuInd ) then
+		self.SubmenuInd = vgui.Create( "DLabel", self )
+	end
+
+	self.SubmenuInd:SetText(">")
+	self.SubmenuInd:SetTextColor( Color( 80, 80, 80) )
+	self.SubmenuInd:SetTall( 15 )
+	self.SubmenuInd:SetPos(240,0)
 	self:InvalidateLayout()
 end
 
@@ -295,7 +308,7 @@ function PANEL:OpenPluginMenu( plugin )
 		RunConsoleCommand( "ev", plugin.ChatCommand, unpack( self:GetParent().Tab.PlayerList:GetSelectedPlayers() ) )
 		
 		self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide()/2, 0, 0.2 )
-		
+
 		self:GetParent().Tab.ButCancel:SetEnabled( false )
 		self:GetParent().Tab.ButCancel:AlphaTo(0, 0)
 	end
@@ -311,6 +324,11 @@ function PANEL:AddButton( plugin, cat, highlight )
 	
 	button.plugin = plugin
 	button.m_bAlt = highlight
+
+	if(button.submenu ~= nil)then
+		button:AddSubmenuIndicator()
+	end
+
 	button:SetText( button.title )
 	
 	button.OnSelect = function()
