@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.lua": "glua"
+    },
+    "Lua.diagnostics.enable": false
+}

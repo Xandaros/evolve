@@ -19,11 +19,26 @@ evolve.admins = 1
 evolve.colors.blue = Color( 98, 176, 255, 255 )
 evolve.colors.red = Color( 255, 62, 62, 255 )
 evolve.colors.white = color_white
-evolve.category = {}
-evolve.category.administration = 1
-evolve.category.actions = 2
-evolve.category.punishment = 3
-evolve.category.teleportation = 4
+
+evolve.category = {
+	administration = {
+		id=1,
+		label="Administration"
+	},
+	actions = {
+		id=2,
+		label="Actions"
+	},
+	punishment = {
+		id=3,
+		label="Punishment"
+	},
+	teleportation = {
+		id=4,
+		label="Teleportation"
+	}
+}
+
 evolve.stagedPlugins = {}
 evolve.plugins = {}
 evolve.version = 179
@@ -254,7 +269,10 @@ function evolve:RegisterPlugin( plugin )
 	if ( string.Left( pluginFile, string.find( pluginFile, "_" ) - 1 ) != "cl" or CLIENT ) then
 		table.insert( evolve.stagedPlugins, plugin )
 		plugin.File = pluginFile
-		if ( plugin.Privileges and SERVER ) then table.Add( evolve.privileges, plugin.Privileges ) table.sort( evolve.privileges ) end
+		if ( plugin.Privileges and SERVER ) then 
+			table.Add( evolve.privileges, plugin.Privileges ) 
+			table.sort( evolve.privileges ) 
+		end
 	else
 		table.insert( evolve.plugins, { Title = plugin.Title, File = pluginFile } )
 	end

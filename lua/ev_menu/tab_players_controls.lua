@@ -141,7 +141,9 @@ function PANEL:Populate()
 			if ( item.LastClick and os.clock() < item.LastClick + 0.3 and item.LastX == gui.MouseX() and item.LastY == gui.MouseY() ) then
 				self:MoveTo( -self.Parent.Width, 0, 0.1 )
 				self.Parent.PluginList:MoveTo( 0, 0, 0.1 )
-				self.Parent.ButPlugins:SetButtonText( "Players" )
+
+				self.Parent.ButCancel:SetEnabled( true )
+				self.Parent.ButCancel:AlphaTo(255, 0)
 			end
 			
 			item.LastClick = os.clock()
@@ -174,6 +176,7 @@ function PANEL:Init()
         self:SetContentAlignment( 4 )
         self:SetTextInset( 5, 0 )
         self:SetTall( 15 )
+
         table.insert( ToolButtons, self )
 end
 
@@ -228,6 +231,18 @@ function PANEL:AddCheckBox( strConVar )
 	self:InvalidateLayout()
 end
 
+function PANEL:AddSubmenuIndicator()
+	if ( !self.SubmenuInd ) then
+		self.SubmenuInd = vgui.Create( "DLabel", self )
+	end
+
+	self.SubmenuInd:SetText(">")
+	self.SubmenuInd:SetTextColor( Color( 80, 80, 80) )
+	self.SubmenuInd:SetTall( 15 )
+	self.SubmenuInd:SetPos(240,0)
+	self:InvalidateLayout()
+end
+
 vgui.Register( "ToolMenuButton", PANEL, "DButton" )
 
 /*-------------------------------------------------------------------------------------------------------------------------
@@ -266,9 +281,10 @@ function PANEL:PopulateSubmenu( plugin, submenu, title )
 		button.OnSelect = function()
 			RunConsoleCommand( "ev", plugin.ChatCommand, unpack( self:GetParent().Tab.PlayerList:GetSelectedPlayers() ), value[2] )
 			
-			self:GetParent().Tab.PlayerList:MoveTo( 0, 0, 0.2 )
-			self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide(), 0, 0.2 )
-			self:GetParent().Tab.ButPlugins:SetButtonText( "Plugins" )
+			self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide()/2, 0, 0.2 )
+
+			self:GetParent().Tab.ButCancel:SetEnabled( false )
+			self:GetParent().Tab.ButCancel:AlphaTo(0, 0)
 			self:Reset()
 		end
 		
@@ -282,15 +298,19 @@ function PANEL:OpenPluginMenu( plugin )
 	
 	if ( submenu ) then
 		self:PopulateSubmenu( plugin, submenu, submenutitle )
-		
+
+		self:GetParent().Tab.ButCancel:SetEnabled( true )
+		self:GetParent().Tab.ButCancel:AlphaTo(255, 0)
+
 		self.PluginContainer:MoveTo( -self:GetWide(), 0, 0.2 )
 		self.Submenu[1]:MoveTo( 1, 1, 0.2 )
 	else
 		RunConsoleCommand( "ev", plugin.ChatCommand, unpack( self:GetParent().Tab.PlayerList:GetSelectedPlayers() ) )
 		
-		self:GetParent().Tab.PlayerList:MoveTo( 0, 0, 0.2 )
-		self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide(), 0, 0.2 )
-		self:GetParent().Tab.ButPlugins:SetButtonText( "Plugins" )
+		self:GetParent().Tab.PluginList:MoveTo( self:GetParent():GetWide()/2, 0, 0.2 )
+
+		self:GetParent().Tab.ButCancel:SetEnabled( false )
+		self:GetParent().Tab.ButCancel:AlphaTo(0, 0)
 	end
 end
 
@@ -300,17 +320,25 @@ function PANEL:AddButton( plugin, cat, highlight )
 	local button = vgui.Create( "ToolMenuButton" )
 	button.title, button.category, button.submenu, button.submenutitle = plugin:Menu()
 	
-	if ( button.category != cat ) then button:RemoveEx() return highlight end
+	if ( button.category.id != cat ) then button:RemoveEx() return highlight end
 	
 	button.plugin = plugin
 	button.m_bAlt = highlight
+
+	if(button.submenu ~= nil)then
+		button:AddSubmenuIndicator()
+	end
+
 	button:SetText( button.title )
 	
 	button.OnSelect = function()
 		self:OpenPluginMenu( plugin )
 	end
 	
-	self.Categories[ button.category ].Container:AddItem( button )
+	if(self.Categories[ button.category.id ] ~= nil) then
+		self.Categories[ button.category.id ].Container:AddItem( button )
+	end
+	
 	table.insert( self.Buttons, button )
 	
 	return !highlight
@@ -341,40 +369,41 @@ function PANEL:CreatePluginsPage()
 	self.PluginContainer:SetPadding( 1 )
 	self.PluginContainer:SetSpacing( 1 )
 	
-	local catNames = { "Administration", "Actions", "Punishment", "Teleportation" }
 	self.Categories = {}
-	
-	for i = 1, 4 do
-		self.Categories[i] = vgui.Create( "DCollapsibleCategory", self.PluginContainer )
-		self.Categories[i]:SetTall( 22 )
-		self.Categories[i]:SetExpanded( 0 )
-		self.Categories[i]:SetLabel( catNames[i] )
-		self.Categories[i].Header.OnMousePressed = function()
-			for ii = 1, 4 do
-				if ( self.Categories[ii]:GetExpanded() ) then self.Categories[ii]:Toggle() end
+	for key,cat in pairs(evolve.category) do 
+		local categoryGui = vgui.Create( "DCollapsibleCategory", self.PluginContainer )
+		categoryGui:SetTall( 22 )
+		categoryGui:SetExpanded( 0 )
+		categoryGui:SetLabel( cat.label )
+		categoryGui.Header.OnMousePressed = function()
+			for _,cat in pairs(self.Categories) do
+				if ( cat:GetExpanded() ) then cat:Toggle() end
 			end
-			self.Categories[i]:SetExpanded( false )
-			self.Categories[i]:Toggle()
+			categoryGui:SetExpanded( false )
+			categoryGui:Toggle()
 		end
 		
-		self.Categories[i].Container = vgui.Create( "DPanelList", self.Categories[i] )
-		self.Categories[i].Container:SetAutoSize( true )
-		self.Categories[i].Container:SetSpacing( 0 )
-		self.Categories[i].Container:EnableHorizontal( false )
-		self.Categories[i].Container:EnableVerticalScrollbar( true )
-		self.Categories[i]:SetContents( self.Categories[i].Container )
+		categoryGui.Container = vgui.Create( "DPanelList", categoryGui )
+		categoryGui.Container:SetAutoSize( true )
+		categoryGui.Container:SetSpacing( 0 )
+		categoryGui.Container:EnableHorizontal( false )
+		categoryGui.Container:EnableVerticalScrollbar( true )
+		categoryGui:SetContents( categoryGui.Container )
 		
+		self.Categories[cat.id]=categoryGui
+		self.PluginContainer:AddItem( categoryGui )
+
 		local highlight = true
 		for _, v in pairs( evolve.plugins ) do
-			highlight = self:AddButton( v, i, highlight )
+			highlight = self:AddButton( v, cat.id, highlight )
 		end
-		
-		self.PluginContainer:AddItem( self.Categories[i] )
+
+
 	end
 	
 	self:CreateSubmenu()
 	
-	self.Categories[2].Header.OnMousePressed()
+	self.Categories[evolve.category.actions.id].Header.OnMousePressed()
 end
 
 derma.DefineControl( "EvolvePluginList", "Plugin list", PANEL, "DPanelList" )
