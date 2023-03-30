@@ -27,16 +27,14 @@ function TAB:Initialize( pnl )
 	self.ButKick:SetButtonText( "Kick" )
 
 	self.ButKick.DoClick = function()
-		if ( self.ButPlugins:GetButtonText() == "Cancel" ) then
-			self.PluginList:Reset()
-		end
-		
+		self.PluginList:Reset()
+
 		self.PluginList:OpenPluginMenu( evolve:FindPlugin( "Kick" ) )
 		
 		self.PluginList:MoveTo( self.Width/2, 0, 0.1 )
 
-		self.ButPlugins:SetEnabled( false )
-		self.ButPlugins:AlphaTo(255, 0)
+		self.ButCancel:SetEnabled( true )
+		self.ButCancel:AlphaTo(255, 0)
 	end
 	
 	self.ButBan = vgui.Create( "EvolveButton", pnl )
@@ -44,33 +42,30 @@ function TAB:Initialize( pnl )
 	self.ButBan:SetSize( 64, 27 )
 	self.ButBan:SetButtonText( "Ban" )
 	self.ButBan.DoClick = function()
+
 		self.PluginList:OpenPluginMenu( evolve:FindPlugin( "Ban" ) )
 		self.PluginList:MoveTo( self.Width/2, 0, 0.1 )
 
-		self.ButPlugins:SetEnabled( false )
-		self.ButPlugins:AlphaTo(255, 0)
+		self.ButCancel:SetEnabled( true )
+		self.ButCancel:AlphaTo(255, 0)
 	end
 	
-	self.ButPlugins = vgui.Create( "EvolveButton", pnl )
-	self.ButPlugins:SetSize( 64, 27 )
-	self.ButPlugins:SetPos( self.Width/2 ,pnl:GetParent():GetTall() - 58 )
+	self.ButCancel = vgui.Create( "EvolveButton", pnl )
+	self.ButCancel:SetSize( 64, 27 )
+	self.ButCancel:SetPos( self.Width/2 ,pnl:GetParent():GetTall() - 58 )
 
-	self.ButPlugins:SetButtonText( "Cancel" )
+	self.ButCancel:SetButtonText( "Cancel" )
 	
-	self.ButPlugins:SetEnabled( false )
-	self.ButPlugins:AlphaTo(0, 0)
+	self.ButCancel:SetEnabled( false )
+	self.ButCancel:AlphaTo(0, 0)
 
-	self.ButPlugins:SetNotHighlightedColor( 50 )
-	self.ButPlugins:SetHighlightedColor( 90 )
-	self.ButPlugins.DoClick = function()
-		if ( self.ButPlugins:GetButtonText() == "Plugins" ) then
-
-		else
-			self.PluginList:MoveTo( self.Width/2, 0, 0.1 )
-			self.PluginList:Reset()
-			self.ButPlugins:SetEnabled( false )
-			self.ButPlugins:AlphaTo(0, 0)
-		end
+	self.ButCancel:SetNotHighlightedColor( 50 )
+	self.ButCancel:SetHighlightedColor( 90 )
+	self.ButCancel.DoClick = function()
+		self.PluginList:MoveTo( self.Width/2, 0, 0.1 )
+		self.PluginList:Reset()
+		self.ButCancel:SetEnabled( false )
+		self.ButCancel:AlphaTo(0, 0)
 	end
 	
 	// Create the plugin list
@@ -84,14 +79,11 @@ end
 
 function TAB:Update()
 	self.PlayerList:Populate()
-	
-	if ( self.ButPlugins:GetButtonText() != "" ) then
-		self.PluginList:SetPos( self.Width/2, 0 )
-		self.PluginList:Reset()
+	self.PluginList:SetPos( self.Width/2, 0 )
+	self.PluginList:Reset()
 
-		self.ButPlugins:AlphaTo(0, 0)
-		self.ButPlugins:SetEnabled( false )
-	end
+	self.ButCancel:AlphaTo(0, 0)
+	self.ButCancel:SetEnabled( false )
 end
 
 function TAB:IsAllowed()
