@@ -103,10 +103,10 @@ function TAB:Initialize( pnl )
         draw.SimpleText( "If you have the plugin, please wait a few seconds.", "ScoreboardText", self.Block:GetWide() / 2, self.Block:GetTall() / 2 + 10, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
     end
 
-    timer.Create("mapCheckTimer", 2, 0, function()
+    timer.Create("mapCheckTimer", 1, 0, function()
         if(table.IsEmpty(maps))then
             evolve:MapPlugin_RequestMaps()
-            timer.Simple(1, function()
+            timer.Simple(0.5, function()
                 self.MapList:Clear()
                 TAB:RenderMaps()
         
